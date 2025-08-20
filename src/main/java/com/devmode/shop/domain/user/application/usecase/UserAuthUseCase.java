@@ -16,6 +16,7 @@ import com.devmode.shop.domain.user.domain.service.TokenWhitelistService;
 import com.devmode.shop.domain.user.domain.service.UserService;
 import com.devmode.shop.global.exception.RestApiException;
 import static com.devmode.shop.global.exception.code.status.AuthErrorStatus.ALREADY_REGISTERED_EMAIL;
+import static com.devmode.shop.global.exception.code.status.AuthErrorStatus.ALREADY_REGISTERED_USER_ID;
 import static com.devmode.shop.global.exception.code.status.AuthErrorStatus.EMPTY_JWT;
 import static com.devmode.shop.global.exception.code.status.AuthErrorStatus.INVALID_ACCESS_TOKEN;
 import static com.devmode.shop.global.exception.code.status.AuthErrorStatus.LOGIN_ERROR;
@@ -40,20 +41,22 @@ public class UserAuthUseCase {
 		if (userService.isAlreadyRegistered(request.email())) {
 			throw new RestApiException(ALREADY_REGISTERED_EMAIL);
 		}
+		if (userService.isUserIdAlreadyRegistered(request.userId())) {
+			throw new RestApiException(ALREADY_REGISTERED_USER_ID);
+		}
 		String code = "USER_" + System.currentTimeMillis(); // 간단한 코드 생성
 		userService.save(request, code);
 	}
 
 	public LoginResponse login(LoginRequest request) {
-		User user = userService.findByEmail(request.email());
+		User user = userService.findByUserId(request.userId());
 		if (!passwordEncoder.matches(request.password(), user.getPassword())) {
 			throw new RestApiException(LOGIN_ERROR);
 		}
-		String access = tokenProvider.createAccessToken(String.valueOf(user.getId()));
-		String refresh = tokenProvider.createRefreshToken(String.valueOf(user.getId()));
+		String access = tokenProvider.createAccessToken(user.getUserId());
+		String refresh = tokenProvider.createRefreshToken(user.getUserId());
 		Duration ttl = tokenProvider.getRemainingDuration(refresh).orElse(Duration.ofDays(14));
-		refreshTokenService.saveRefreshToken(String.valueOf(user.getId()), refresh, ttl);
-		user.updateLastLoginAt(java.time.OffsetDateTime.now());
+		refreshTokenService.saveRefreshToken(user.getUserId(), refresh, ttl);
 		return new LoginResponse(access, refresh);
 	}
 

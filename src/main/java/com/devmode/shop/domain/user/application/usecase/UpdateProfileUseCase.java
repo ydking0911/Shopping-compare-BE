@@ -22,7 +22,7 @@ public class UpdateProfileUseCase {
 	private final UserService userService;
 	private final PasswordEncoder passwordEncoder;
 
-	public ProfileResponse update(Long userId, UpdateProfileRequest request) {
+	public ProfileResponse update(String userId, UpdateProfileRequest request) {
 		User user = userService.findUser(userId);
 		if (user == null) throw new RestApiException(_NOT_FOUND);
 

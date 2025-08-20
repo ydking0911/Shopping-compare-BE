@@ -1,6 +1,7 @@
 HELP.md
-.gradle
-build/
+/.gradle/
+/.idea/
+/build/
 /src/main/resources/secret/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/

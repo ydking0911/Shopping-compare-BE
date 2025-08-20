@@ -38,7 +38,7 @@ public class TokenProvider {
 	private static final String TOKEN_HEADER = "Authorization";
 	private static final String BEARER = "Bearer ";
 	private static final String ID_CLAIM = "id";
-	private static final String ROLE_CLAIM = "role";
+
 
 	public String createAccessToken(String id) {
 		Date now = new Date();
@@ -53,7 +53,6 @@ public class TokenProvider {
 				))
 				.setSubject(ACCESS_TOKEN_SUBJECT)
 				.claim(ID_CLAIM, id)
-				.claim(ROLE_CLAIM, "ROLE_USER")
 				.signWith(Keys.hmacShaKeyFor(jwtProperties.getKey().getBytes(StandardCharsets.UTF_8)), SignatureAlgorithm.HS256)
 				.compact();
 	}
@@ -71,7 +70,6 @@ public class TokenProvider {
 				))
 				.setSubject(REFRESH_TOKEN_SUBJECT)
 				.claim(ID_CLAIM, id)
-				.claim(ROLE_CLAIM, "ROLE_USER")
 				.signWith(Keys.hmacShaKeyFor(jwtProperties.getKey().getBytes(StandardCharsets.UTF_8)), SignatureAlgorithm.HS256)
 				.compact();
 	}
@@ -89,11 +87,8 @@ public class TokenProvider {
 
 	public Authentication getAuthentication(String token) {
 		Claims claims = getClaims(token);
-		String role = getRole(token)
-				.orElse("ROLE_USER");
-
-		Set<SimpleGrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority(role));
-		return new UsernamePasswordAuthenticationToken(new User(claims.get(ID_CLAIM, String.class), "", authorities), token, authorities);
+		// 권한 없이 인증된 사용자로만 처리
+		return new UsernamePasswordAuthenticationToken(claims.get(ID_CLAIM, String.class), "", Collections.emptyList());
 	}
 
 	public Optional<String> getId(String token) {
@@ -104,13 +99,7 @@ public class TokenProvider {
 		}
 	}
 
-	public Optional<String> getRole(String token) {
-		try {
-			return Optional.ofNullable(getClaims(token).get(ROLE_CLAIM, String.class));
-		} catch (Exception e) {
-			return Optional.empty();
-		}
-	}
+
 
 	public Optional<String> getToken(HttpServletRequest request) {
 		return Optional.ofNullable(request.getHeader(TOKEN_HEADER))

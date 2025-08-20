@@ -16,7 +16,14 @@ public class UserProfileUseCase {
 	private final UserService userService;
 
 	public ProfileResponse findProfile(String userId) {
-		return userService.findProfile(userId);
+		ProfileResponse profileDto = userService.findProfile(userId);
+
+		return new ProfileResponse(
+				profileDto.userId(),
+				profileDto.email(),
+				profileDto.name(),
+				profileDto.birth()
+		);
 	}
 }
 

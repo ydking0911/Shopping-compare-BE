@@ -1,13 +1,11 @@
 package com.devmode.shop.domain.user.application.dto.request;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 public record LoginRequest(
-		@NotBlank @Email String email,
-		@NotBlank String password,
-		@NotNull String fcmToken
+    @NotBlank(message = "사용자 ID는 필수입니다.")
+    String userId,
+    
+    @NotBlank(message = "비밀번호는 필수입니다.")
+    String password
 ) {}
-
-

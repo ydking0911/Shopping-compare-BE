@@ -71,11 +71,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(request, response);
         } catch (RestApiException e) {
-            log.error("[JwtAuthFilter] authentication error: {}", e.getMessage());
+            log.error("[JwtAuthFilter] authentication error: {}", e.getErrorCode().getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json;charset=UTF-8");
 
-            String jsonResponse = String.format("{\"message\": \"%s\"}", e.getMessage());
+            String message = e.getErrorCode().getMessage() != null ? e.getErrorCode().getMessage() : "인증 오류가 발생했습니다.";
+            String jsonResponse = String.format("{\"message\": \"%s\"}", message);
 
             PrintWriter writer = response.getWriter();
             writer.write(jsonResponse);

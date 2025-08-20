@@ -1,10 +1,12 @@
 package com.devmode.shop.global.exception.code.status;
 
+import org.springframework.http.HttpStatus;
+
 import com.devmode.shop.global.exception.code.BaseCode;
 import com.devmode.shop.global.exception.code.BaseCodeInterface;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
@@ -20,7 +22,8 @@ public enum AuthErrorStatus implements BaseCodeInterface {
     INVALID_REFRESH_TOKEN(HttpStatus.BAD_REQUEST, "AUTH006", "유효하지 않은 REFRESH TOKEN입니다."),
     FAILED_SOCIAL_LOGIN(HttpStatus.INTERNAL_SERVER_ERROR, "AUTH007", "소셜 로그인에 실패하였습니다."),
     LOGIN_ERROR(HttpStatus.BAD_REQUEST, "AUTH008", "잘못된 아이디 혹은 비밀번호입니다."),
-    ALREADY_REGISTERED_EMAIL(HttpStatus.BAD_REQUEST, "AUTH009", "이미 가입된 이메일입니다.")
+    ALREADY_REGISTERED_EMAIL(HttpStatus.BAD_REQUEST, "AUTH009", "이미 가입된 이메일입니다."),
+    ALREADY_REGISTERED_USER_ID(HttpStatus.BAD_REQUEST, "AUTH010", "이미 사용 중인 아이디입니다.")
     ;
 
     private final HttpStatus httpStatus;

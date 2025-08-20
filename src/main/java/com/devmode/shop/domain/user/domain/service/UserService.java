@@ -24,14 +24,24 @@ public class UserService {
 		return userRepository.findByEmail(email)
 				.orElseThrow(() -> new RestApiException(_NOT_FOUND));
 	}
+	
+	public User findByUserId(String userId) {
+		return userRepository.findByUserId(userId)
+				.orElseThrow(() -> new RestApiException(_NOT_FOUND));
+	}
 
 	public boolean isAlreadyRegistered(String email) {
 		return userRepository.existsByEmail(email);
+	}
+	
+	public boolean isUserIdAlreadyRegistered(String userId) {
+		return userRepository.existsByUserId(userId);
 	}
 
 	@Transactional
 	public User save(SignUpRequest request, String code) {
 		User user = User.builder()
+				.userId(request.userId())
 				.email(request.email())
 				.password(passwordEncoder.encode(request.password()))
 				.name(request.name())
@@ -41,19 +51,12 @@ public class UserService {
 	}
 
 	public User findUser(String userId) {
-		Long id = Long.valueOf(userId);
-		return userRepository.findById(id)
-				.orElseThrow(() -> new RestApiException(_NOT_FOUND));
-	}
-
-	public User findUser(Long userId) {
-		return userRepository.findById(userId)
+		return userRepository.findByUserId(userId)
 				.orElseThrow(() -> new RestApiException(_NOT_FOUND));
 	}
 
 	public ProfileResponse findProfile(String userId) {
-		Long id = Long.valueOf(userId);
-		User user = userRepository.findById(id)
+		User user = userRepository.findByUserId(userId)
 				.orElseThrow(() -> new RestApiException(_NOT_FOUND));
 		return ProfileResponse.create(user);
 	}

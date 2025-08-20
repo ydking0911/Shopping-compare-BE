@@ -1,8 +1,8 @@
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/shop
-    username: postgres
-    password: postgres
+    username: shop_user
+    password: shop_pass
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -26,17 +26,21 @@ exclude-auth-path-patterns:
       method: POST
     - path-pattern: /api/users/login
       method: POST
-    - path-pattern: /api/users/logout
-      method: DELETE
+    - path-pattern: /swagger-ui.html
+      method: GET
+    - path-pattern: /swagger-ui/index.html
+      method: GET
     - path-pattern: /swagger-ui/**
       method: GET
-    - path-pattern: /v3/api-docs/**
+    - path-pattern: /v3/api-docs
       method: GET
-    - path-pattern: /webjars/**
+    - path-pattern: /v3/api-docs/swagger-config
       method: GET
+    - path-pattern: /webjars
+      method: GET
+    - path-pattern: /api/batch/transcript/execute
+      method: POST
     - path-pattern: /actuator/**
-      method: GET
-    - path-pattern: /health
       method: GET
     - path-pattern: /**
       method: OPTIONS
@@ -47,15 +51,19 @@ exclude-blacklist-path-patterns:
       method: POST
     - path-pattern: /api/users/login
       method: POST
+    - path-pattern: /swagger-ui.html
+      method: GET
+    - path-pattern: /swagger-ui/index.html
+      method: GET
     - path-pattern: /swagger-ui/**
       method: GET
-    - path-pattern: /v3/api-docs/**
+    - path-pattern: /v3/api-docs
       method: GET
-    - path-pattern: /webjars/**
+    - path-pattern: /v3/api-docs/swagger-config
+      method: GET
+    - path-pattern: /webjars
       method: GET
     - path-pattern: /actuator/**
-      method: GET
-    - path-pattern: /health
       method: GET
     - path-pattern: /**
       method: OPTIONS
@@ -65,3 +73,15 @@ cors:
   allowed-methods: "GET,POST,PUT,PATCH,DELETE,OPTIONS"
   allowed-headers: "Authorization,Content-Type,Accept"
   max-age: 3600
+
+# Swagger
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    groups-order: DESC # path, query, body, response 순서대로 출력
+    tags-sorter: alpha # 태그를 알파벳 순으로 정렬
+    operations-sorter: method # delete - get - patch - post - put 순으로 정렬
+    enabled: true
+  paths-to-match:
+    - /api/**
