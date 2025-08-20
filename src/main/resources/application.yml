@@ -20,12 +20,23 @@ jwt:
   refresh:
     expiration: 14
 
+# 네이버 쇼핑 API 설정
+naver:
+  shopping:
+    client-id: ${NAVER_CLIENT_ID:your_client_id_here}
+    client-secret: ${NAVER_CLIENT_SECRET:your_client_secret_here}
+    api-url: https://openapi.naver.com/v1/search/shop.json
+
 exclude-auth-path-patterns:
   paths:
-    - path-pattern: /api/users/sign-up
+    - path-pattern: /api/users/signup
       method: POST
     - path-pattern: /api/users/login
       method: POST
+    - path-pattern: /api/products/search
+      method: GET
+    - path-pattern: /api/products/health
+      method: GET
     - path-pattern: /swagger-ui.html
       method: GET
     - path-pattern: /swagger-ui/index.html
@@ -47,10 +58,14 @@ exclude-auth-path-patterns:
 
 exclude-blacklist-path-patterns:
   paths:
-    - path-pattern: /api/users/sign-up
+    - path-pattern: /api/users/signup
       method: POST
     - path-pattern: /api/users/login
       method: POST
+    - path-pattern: /api/products/search
+      method: GET
+    - path-pattern: /api/products/health
+      method: GET
     - path-pattern: /swagger-ui.html
       method: GET
     - path-pattern: /swagger-ui/index.html

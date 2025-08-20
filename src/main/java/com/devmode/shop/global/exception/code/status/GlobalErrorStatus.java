@@ -35,6 +35,11 @@ public enum GlobalErrorStatus implements BaseCodeInterface {
     FCM_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "FCM404", "요청한 정보를 찾을 수 없습니다."),
     INVALID_SELF_RELATION(HttpStatus.BAD_REQUEST, "RELATION001", "자신에게 요청을 보낼 수 없습니다."),
 
+    // Product 검색 관련 에러
+    SEARCH_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "PRODUCT5001", "상품 검색에 실패했습니다."),
+    SEARCH_QUOTA_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "PRODUCT4291", "검색 할당량이 초과되었습니다."),
+    INVALID_SEARCH_KEYWORD(HttpStatus.BAD_REQUEST, "PRODUCT4001", "올바르지 않은 검색 키워드입니다."),
+
     // For test
     TEMP_EXCEPTION(HttpStatus.BAD_REQUEST, "TEMP4001", "예외처리 테스트입니다."),
     ;
