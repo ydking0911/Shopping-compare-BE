@@ -1,5 +1,6 @@
 package com.devmode.shop.domain.product.ui;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -57,7 +58,7 @@ class ProductControllerTest {
         // given
         ProductSearchRequest request = ProductSearchRequest.of("노트북");
 
-        ProductSearchResponse response = ProductSearchResponse.of("노트북", Arrays.asList());
+        ProductSearchResponse response = ProductSearchResponse.of("노트북", new ArrayList<>());
 
         when(productService.searchProducts(any(ProductSearchRequest.class)))
                 .thenReturn(response);
@@ -207,7 +208,7 @@ class ProductControllerTest {
             500000, 2000000, 4.5, 50
         );
         
-        ProductSearchResponse response = ProductSearchResponse.of("노트북", Arrays.asList());
+        ProductSearchResponse response = ProductSearchResponse.of("노트북", new ArrayList<>());
 
         when(productService.searchProducts(any(ProductSearchRequest.class)))
                 .thenReturn(response);
@@ -227,7 +228,7 @@ class ProductControllerTest {
         // given
         ProductSearchRequest request = ProductSearchRequest.of("노트북"); // 정적 팩토리 메서드 사용
         
-        ProductSearchResponse response = ProductSearchResponse.of("노트북", Arrays.asList());
+        ProductSearchResponse response = ProductSearchResponse.of("노트북", new ArrayList<>());
 
         when(productService.searchProducts(any(ProductSearchRequest.class)))
                 .thenReturn(response);

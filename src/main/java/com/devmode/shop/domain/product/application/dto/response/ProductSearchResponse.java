@@ -13,7 +13,7 @@ public record ProductSearchResponse(
     String sort,
     String source,
     List<String> appliedFilters,
-    List<NaverProductItem> products, // ProductItem 대신 NaverProductItem 직접 사용
+    List<ProductItem> products, // NaverProductItem을 ProductItem으로 변경
     SearchMetadata metadata
 ) {
     public ProductSearchResponse {
@@ -53,7 +53,7 @@ public record ProductSearchResponse(
     }
     
     // 테스트용 간단한 생성 메서드
-    public static ProductSearchResponse of(String keyword, List<NaverProductItem> products) {
+    public static ProductSearchResponse of(String keyword, List<ProductItem> products) {
         return new ProductSearchResponse(
             keyword, 1, 20, 150, 1, 20, 8, "sim", "fresh",
             List.of(), products, null
