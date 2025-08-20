@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import com.devmode.shop.domain.user.application.dto.request.SignUpRequest;
 import com.devmode.shop.domain.user.application.dto.request.LoginRequest;
+import com.devmode.shop.domain.user.application.dto.request.TokenReissueRequest;
 import com.devmode.shop.domain.user.application.dto.response.LoginResponse;
 import com.devmode.shop.domain.user.application.dto.response.TokenReissueResponse;
 import com.devmode.shop.global.common.BaseResponse;
@@ -94,5 +95,5 @@ public interface AuthApi extends BaseApi {
             content = @Content(schema = @Schema(implementation = BaseResponse.class))
         )
     })
-    TokenReissueResponse reissueToken(String refreshToken);
+    TokenReissueResponse reissueToken(TokenReissueRequest request);
 }

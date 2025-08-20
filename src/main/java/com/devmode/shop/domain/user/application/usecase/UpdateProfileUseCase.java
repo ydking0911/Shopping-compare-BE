@@ -24,7 +24,6 @@ public class UpdateProfileUseCase {
 
 	public ProfileResponse update(String userId, UpdateProfileRequest request) {
 		User user = userService.findUser(userId);
-		if (user == null) throw new RestApiException(_NOT_FOUND);
 
 		String encodedNewPassword = null;
 

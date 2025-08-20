@@ -39,7 +39,7 @@ public class UserService {
 	}
 
 	@Transactional
-	public User save(SignUpRequest request, String code) {
+	public User save(SignUpRequest request) {
 		User user = User.builder()
 				.userId(request.userId())
 				.email(request.email())

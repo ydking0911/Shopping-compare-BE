@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.devmode.shop.domain.user.application.dto.request.LoginRequest;
 import com.devmode.shop.domain.user.application.dto.request.SignUpRequest;
+import com.devmode.shop.domain.user.application.dto.request.TokenReissueRequest;
 import com.devmode.shop.domain.user.application.dto.response.LoginResponse;
+import com.devmode.shop.domain.user.application.dto.response.TokenReissueResponse;
 import com.devmode.shop.domain.user.application.usecase.UserAuthUseCase;
 import com.devmode.shop.global.common.BaseResponse;
 
@@ -43,8 +45,7 @@ public class AuthController implements AuthApi {
 	
 	@PostMapping("/reissue")
 	@Override
-	public com.devmode.shop.domain.user.application.dto.response.TokenReissueResponse reissueToken(String refreshToken) {
-		// 토큰 재발급 로직 구현 필요
-		return null; // 임시 반환값
+	public TokenReissueResponse reissueToken(@Valid @RequestBody TokenReissueRequest request) {
+		return userAuthUseCase.reissueToken(request);
 	}
 }
