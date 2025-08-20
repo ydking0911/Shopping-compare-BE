@@ -13,6 +13,7 @@ import com.devmode.shop.domain.user.application.dto.request.TokenReissueRequest;
 import com.devmode.shop.domain.user.application.dto.response.LoginResponse;
 import com.devmode.shop.domain.user.application.dto.response.TokenReissueResponse;
 import com.devmode.shop.global.common.BaseResponse;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * 인증 관련 API 인터페이스
@@ -54,7 +55,7 @@ public interface AuthApi extends BaseApi {
             content = @Content(schema = @Schema(implementation = BaseResponse.class))
         )
     })
-    LoginResponse login(LoginRequest request);
+    BaseResponse<LoginResponse> login(LoginRequest request);
     
     @Operation(
         summary = "로그아웃",
@@ -72,7 +73,7 @@ public interface AuthApi extends BaseApi {
             content = @Content(schema = @Schema(implementation = BaseResponse.class))
         )
     })
-    BaseResponse<?> logout();
+    BaseResponse<?> logout(HttpServletRequest request);
     
     @Operation(
         summary = "토큰 재발급",
@@ -95,5 +96,5 @@ public interface AuthApi extends BaseApi {
             content = @Content(schema = @Schema(implementation = BaseResponse.class))
         )
     })
-    TokenReissueResponse reissueToken(TokenReissueRequest request);
+    BaseResponse<TokenReissueResponse> reissueToken(TokenReissueRequest request);
 }

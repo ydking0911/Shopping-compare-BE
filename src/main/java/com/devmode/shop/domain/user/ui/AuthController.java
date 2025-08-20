@@ -16,6 +16,7 @@ import com.devmode.shop.domain.user.application.usecase.UserAuthUseCase;
 import com.devmode.shop.global.common.BaseResponse;
 
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -26,26 +27,25 @@ public class AuthController implements AuthApi {
 	private final UserAuthUseCase userAuthUseCase;
 
 	@PostMapping("/signup")
-	public BaseResponse<?> signup(@Valid @RequestBody SignUpRequest request) {
+	public BaseResponse<Void> signup(@Valid @RequestBody SignUpRequest request) {
 		userAuthUseCase.signUp(request);
 		return BaseResponse.onSuccess();
 	}
 
 	@PostMapping("/login")
-	public LoginResponse login(@Valid @RequestBody LoginRequest request) {
-		return userAuthUseCase.login(request);
+	public BaseResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+		return BaseResponse.onSuccess(userAuthUseCase.login(request));
 	}
 
 	@DeleteMapping("/logout")
-	@Override
-	public BaseResponse<?> logout() {
-		userAuthUseCase.logout(null); // HttpServletRequest는 필요에 따라 수정
+	public BaseResponse<Void> logout(HttpServletRequest request) {
+		userAuthUseCase.logout(request);
 		return BaseResponse.onSuccess();
 	}
 	
 	@PostMapping("/reissue")
 	@Override
-	public TokenReissueResponse reissueToken(@Valid @RequestBody TokenReissueRequest request) {
-		return userAuthUseCase.reissueToken(request);
+	public BaseResponse<TokenReissueResponse> reissueToken(@Valid @RequestBody TokenReissueRequest request) {
+		return BaseResponse.onSuccess(userAuthUseCase.reissueToken(request));
 	}
 }
