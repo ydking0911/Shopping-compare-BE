@@ -45,6 +45,8 @@ public class AuthController implements AuthApi {
 	@Override
 	public com.devmode.shop.domain.user.application.dto.response.TokenReissueResponse reissueToken(String refreshToken) {
 		// 토큰 재발급 로직 구현 필요
-		return null; // 임시 반환값
+	public com.devmode.shop.domain.user.application.dto.response.TokenReissueResponse reissueToken(
+			@Valid @RequestBody com.devmode.shop.domain.user.application.dto.request.TokenReissueRequest request) {
+		return userAuthUseCase.reissueToken(request);
 	}
 }
