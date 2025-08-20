@@ -3,8 +3,6 @@ package com.devmode.shop.domain.user.domain.service;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -15,8 +13,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class RefreshTokenService {
 
-	private static final Logger log = LoggerFactory.getLogger(RefreshTokenService.class);
-	private final static String refreshTokenPrefix = "REFRESH_TOKEN:";
+	private static final String refreshTokenPrefix = "REFRESH_TOKEN:";
 	private final RedisTemplate<String, String> redisTemplate;
 
 	public void saveRefreshToken(String userId, String refreshToken, Duration timeout) {

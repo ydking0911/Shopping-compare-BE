@@ -13,7 +13,6 @@ import com.devmode.shop.domain.user.application.dto.response.LoginResponse;
 import com.devmode.shop.domain.user.application.usecase.UserAuthUseCase;
 import com.devmode.shop.global.common.BaseResponse;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 

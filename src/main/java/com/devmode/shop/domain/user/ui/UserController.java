@@ -3,9 +3,6 @@ package com.devmode.shop.domain.user.ui;
 import com.devmode.shop.domain.user.application.dto.request.UpdateProfileRequest;
 import com.devmode.shop.domain.user.application.usecase.UpdateProfileUseCase;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,8 +12,6 @@ import com.devmode.shop.global.annotation.CurrentUser;
 import com.devmode.shop.global.annotation.UserProfileApi;
 import com.devmode.shop.global.common.BaseResponse;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
