@@ -8,14 +8,14 @@ import com.devmode.shop.domain.product.domain.service.NaverShoppingApiService;
 import com.devmode.shop.domain.product.domain.service.ProductCacheService;
 import com.devmode.shop.domain.product.domain.service.ProductTransformService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Slf4j
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ProductSearchUseCase {
     
@@ -27,24 +27,19 @@ public class ProductSearchUseCase {
     public ProductSearchResponse searchProducts(ProductSearchRequest request) {
         long startTime = System.currentTimeMillis();
         
-        log.info("[ProductSearchUseCase] Starting product search for keyword: {}", request.keyword());
-        
         // 1. 캐시 확인
         if (productCacheService.isCached(request)) {
-            log.info("[ProductSearchUseCase] Cache hit, returning cached result");
             return productCacheService.getCachedResult(request)
                     .orElseThrow(() -> new RuntimeException("Failed to retrieve cached result"));
         }
         
         // 2. 쿼터 확인
         if (quotaService.isQuotaExceeded()) {
-            log.error("[ProductSearchUseCase] API quota exceeded, cannot make API call");
             throw new RuntimeException("API quota exceeded for today");
         }
         
         try {
             // 3. 네이버 API 호출
-            log.info("[ProductSearchUseCase] Making API call to Naver Shopping API");
             NaverShoppingResponse naverResponse = naverShoppingApiService.searchProducts(request);
             
             // 4. 쿼터 증가
@@ -68,20 +63,14 @@ public class ProductSearchUseCase {
             // 6. 캐시 저장
             productCacheService.cacheSearchResult(request, response);
             
-            log.info("[ProductSearchUseCase] Search completed successfully. Total results: {}", response.totalResults());
-            
             return response;
             
         } catch (Exception e) {
-            log.error("[ProductSearchUseCase] API call failed: {}", e.getMessage());
-            
             // 7. 캐시 폴백 시도
             try {
-                log.info("[ProductSearchUseCase] Attempting cache fallback");
                 return productCacheService.getCachedResult(request)
                         .orElseThrow(() -> new RuntimeException("No cached result available for fallback"));
             } catch (Exception fallbackException) {
-                log.error("[ProductSearchUseCase] Cache fallback also failed: {}", fallbackException.getMessage());
                 throw new RuntimeException("Product search failed and no fallback available", e);
             }
         }
