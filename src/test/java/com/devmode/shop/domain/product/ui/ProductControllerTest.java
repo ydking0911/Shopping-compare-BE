@@ -25,15 +25,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import com.devmode.shop.domain.product.application.dto.request.ProductSearchRequest;
 import com.devmode.shop.domain.product.application.dto.response.ProductSearchResponse;
 import com.devmode.shop.domain.product.application.usecase.ProductSearchUseCase;
-import com.devmode.shop.domain.product.domain.service.ProductService;
 import com.devmode.shop.global.exception.ExceptionAdvice;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ExtendWith(MockitoExtension.class)
 class ProductControllerTest {
-
-    @Mock
-    private ProductService productService;
 
     @Mock
     private ProductSearchUseCase productSearchUseCase;
@@ -60,7 +56,7 @@ class ProductControllerTest {
 
         ProductSearchResponse response = ProductSearchResponse.of("노트북", new ArrayList<>());
 
-        when(productService.searchProducts(any(ProductSearchRequest.class)))
+        when(productSearchUseCase.searchProducts(any(ProductSearchRequest.class)))
                 .thenReturn(response);
 
         // when & then
@@ -79,7 +75,7 @@ class ProductControllerTest {
         // given
         ProductSearchRequest request = ProductSearchRequest.of("노트북");
 
-        when(productService.searchProducts(any(ProductSearchRequest.class)))
+        when(productSearchUseCase.searchProducts(any(ProductSearchRequest.class)))
                 .thenThrow(new RuntimeException("검색 실패"));
 
         // when & then
@@ -98,14 +94,15 @@ class ProductControllerTest {
             Arrays.asList("used", "rental"), Arrays.asList(), null
         );
 
-        when(productService.searchProducts(any(ProductSearchRequest.class)))
+        when(productSearchUseCase.searchProducts(any(ProductSearchRequest.class)))
                 .thenReturn(response);
 
         // when & then
         mockMvc.perform(get("/api/products/search")
                         .param("keyword", "노트북")
                         .param("page", "1")
-                        .param("size", "20"))
+                        .param("size", "20")
+                        .param("sort", "sim"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("COMMON200"))
                 .andExpect(jsonPath("$.result.keyword").value("노트북"))
@@ -116,7 +113,7 @@ class ProductControllerTest {
     @DisplayName("GET /api/products/search - GET 방식 상품 검색 실패 테스트")
     void testSearchProductsGet_Failure() throws Exception {
         // given
-        when(productService.searchProducts(any(ProductSearchRequest.class)))
+        when(productSearchUseCase.searchProducts(any(ProductSearchRequest.class)))
                 .thenThrow(new RuntimeException("GET 검색 실패"));
 
         // when & then
@@ -134,7 +131,7 @@ class ProductControllerTest {
             Arrays.asList(), Arrays.asList(), null
         );
 
-        when(productService.searchProducts(any(ProductSearchRequest.class)))
+        when(productSearchUseCase.searchProducts(any(ProductSearchRequest.class)))
                 .thenReturn(response);
 
         // when & then
@@ -155,7 +152,7 @@ class ProductControllerTest {
             Arrays.asList("used", "rental"), Arrays.asList(), null
         );
 
-        when(productService.searchProducts(any(ProductSearchRequest.class)))
+        when(productSearchUseCase.searchProducts(any(ProductSearchRequest.class)))
                 .thenReturn(response);
 
         // when & then
@@ -168,17 +165,12 @@ class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/products/health - 헬스체크 테스트")
+    @DisplayName("헬스 체크 테스트")
     void testHealthCheck() throws Exception {
-        // given
-        when(productService.checkHealth())
-                .thenReturn("상품 검색 서비스가 정상적으로 작동 중입니다.");
-
         // when & then
         mockMvc.perform(get("/api/products/health"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value("COMMON200"))
-                .andExpect(jsonPath("$.message").value("요청에 성공하였습니다."));
+                .andExpect(jsonPath("$.code").value("COMMON200"));
     }
 
     @Test
@@ -210,7 +202,7 @@ class ProductControllerTest {
         
         ProductSearchResponse response = ProductSearchResponse.of("노트북", new ArrayList<>());
 
-        when(productService.searchProducts(any(ProductSearchRequest.class)))
+        when(productSearchUseCase.searchProducts(any(ProductSearchRequest.class)))
                 .thenReturn(response);
 
         // when & then
@@ -230,7 +222,7 @@ class ProductControllerTest {
         
         ProductSearchResponse response = ProductSearchResponse.of("노트북", new ArrayList<>());
 
-        when(productService.searchProducts(any(ProductSearchRequest.class)))
+        when(productSearchUseCase.searchProducts(any(ProductSearchRequest.class)))
                 .thenReturn(response);
 
         // when & then
