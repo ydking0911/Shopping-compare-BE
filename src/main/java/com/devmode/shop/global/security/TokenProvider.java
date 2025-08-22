@@ -47,7 +47,7 @@ public class TokenProvider {
 				.setIssuedAt(now)
 				.setExpiration(Date.from(
 						LocalDateTime.now()
-								.plusDays(jwtProperties.getAccessTokenExpirationPeriodDay())
+								.plus(Duration.ofMillis(jwtProperties.getAccessTokenExpirationPeriodDay()))
 								.atZone(ZoneId.of("Asia/Seoul"))
 								.toInstant()
 				))
@@ -64,7 +64,7 @@ public class TokenProvider {
 				.setIssuedAt(now)
 				.setExpiration(Date.from(
 						LocalDateTime.now()
-								.plusDays(jwtProperties.getRefreshTokenExpirationPeriodDay())
+								.plus(Duration.ofMillis(jwtProperties.getRefreshTokenExpirationPeriodDay()))
 								.atZone(ZoneId.of("Asia/Seoul"))
 								.toInstant()
 				))
