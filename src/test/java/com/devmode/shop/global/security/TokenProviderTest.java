@@ -16,8 +16,8 @@ class TokenProviderTest {
 	void createAndParseAccessToken() {
 		JwtProperties props = new JwtProperties();
 		props.setKey("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef");
-		props.setAccessTokenExpirationPeriodDay(1L);
-		props.setRefreshTokenExpirationPeriodDay(14L);
+		props.setAccessTokenExpirationPeriodDay(86400000L); // 1일을 밀리초로
+		props.setRefreshTokenExpirationPeriodDay(1209600000L); // 14일을 밀리초로
 
 		TokenProvider provider = new TokenProvider(props);
 		String token = provider.createAccessToken("testuser");

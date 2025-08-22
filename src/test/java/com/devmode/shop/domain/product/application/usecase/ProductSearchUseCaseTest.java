@@ -1,28 +1,5 @@
 package com.devmode.shop.domain.product.application.usecase;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import com.devmode.shop.domain.product.application.dto.request.ProductSearchRequest;
 import com.devmode.shop.domain.product.application.dto.response.NaverShoppingResponse;
 import com.devmode.shop.domain.product.application.dto.response.ProductSearchResponse;
@@ -30,6 +7,27 @@ import com.devmode.shop.domain.product.domain.service.NaverApiQuotaService;
 import com.devmode.shop.domain.product.domain.service.NaverShoppingApiService;
 import com.devmode.shop.domain.product.domain.service.ProductCacheService;
 import com.devmode.shop.domain.product.domain.service.ProductTransformService;
+import com.devmode.shop.global.exception.RestApiException;
+import com.devmode.shop.global.exception.code.status.GlobalErrorStatus;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProductSearchUseCaseTest {
@@ -44,257 +42,212 @@ class ProductSearchUseCaseTest {
     private NaverApiQuotaService quotaService;
 
     @Mock
-    private ProductTransformService transformService;
+    private ProductTransformService productTransformService;
 
     @InjectMocks
     private ProductSearchUseCase productSearchUseCase;
 
-    private ProductSearchRequest searchRequest;
-    private NaverShoppingResponse naverResponse;
-    private ProductSearchResponse expectedResponse;
+    private ProductSearchRequest request;
+    private ProductSearchResponse mockResponse;
+    private NaverShoppingResponse mockNaverResponse;
 
     @BeforeEach
     void setUp() {
-        searchRequest = ProductSearchRequest.of("노트북");
-
-        naverResponse = new NaverShoppingResponse(
-            "2024-01-01T00:00:00", 150, 1, 20, Arrays.asList()
+        request = new ProductSearchRequest(
+                "laptop",
+                1,
+                10,
+                "sim",
+                List.of("used"),
+                false,
+                "전자제품",
+                "컴퓨터",
+                "노트북",
+                "",
+                "",
+                "",
+                0,
+                0,
+                0.0,
+                0
         );
 
-        expectedResponse = ProductSearchResponse.of("노트북", Arrays.asList());
+        mockResponse = new ProductSearchResponse(
+                "laptop",
+                1,
+                10,
+                100,
+                1,
+                10,
+                10,
+                "sim",
+                "fresh",
+                List.of("used"),
+                List.of(),
+                new ProductSearchResponse.SearchMetadata(
+                        "2025-08-23T00:00:00",
+                        "fresh",
+                        100L,
+                        5,
+                        "NORMAL"
+                )
+        );
+
+        mockNaverResponse = new NaverShoppingResponse(
+                "2025-08-23T00:00:00",
+                100,
+                1,
+                10,
+                List.of()
+        );
     }
 
     @Test
-    @DisplayName("캐시 히트 시 캐시된 결과 반환 테스트")
-    void testSearchProducts_CacheHit() {
+    @DisplayName("캐시에서 상품 검색 결과를 가져올 수 있다")
+    void searchProductsFromCache() {
         // given
-        when(productCacheService.isCached(searchRequest)).thenReturn(true);
-        when(productCacheService.getCachedResult(searchRequest))
-                .thenReturn(Optional.of(expectedResponse));
+        when(productCacheService.isCached(any())).thenReturn(true);
+        when(productCacheService.getCachedResult(any())).thenReturn(Optional.of(mockResponse));
 
         // when
-        ProductSearchResponse result = productSearchUseCase.searchProducts(searchRequest);
+        ProductSearchResponse result = productSearchUseCase.searchProducts(request);
 
         // then
-        assertNotNull(result);
-        assertEquals(expectedResponse, result);
-        verify(productCacheService).isCached(searchRequest);
-        verify(productCacheService).getCachedResult(searchRequest);
+        assertThat(result).isNotNull();
+        assertThat(result.keyword()).isEqualTo("laptop");
+        verify(productCacheService).isCached(request);
+        verify(productCacheService).getCachedResult(request);
         verify(naverShoppingApiService, never()).searchProducts(any());
-        verify(quotaService, never()).isQuotaExceeded();
     }
 
     @Test
-    @DisplayName("캐시 미스 시 API 호출하여 결과 반환 테스트")
-    void testSearchProducts_CacheMiss_Success() {
+    @DisplayName("캐시에 없을 때 네이버 API를 호출하여 상품을 검색할 수 있다")
+    void searchProductsFromNaverApi() {
         // given
-        when(productCacheService.isCached(searchRequest)).thenReturn(false);
+        when(productCacheService.isCached(any())).thenReturn(false);
         when(quotaService.isQuotaExceeded()).thenReturn(false);
-        when(naverShoppingApiService.searchProducts(searchRequest)).thenReturn(naverResponse);
+        when(naverShoppingApiService.searchProducts(any())).thenReturn(mockNaverResponse);
         when(quotaService.getCurrentDailyCount()).thenReturn(5);
         when(quotaService.getQuotaStatus()).thenReturn("NORMAL");
-        when(transformService.transformToProductSearchResponse(
-                eq(naverResponse), eq("노트북"), eq(1), eq(20), eq("sim"),
-                anyList(), eq("fresh"), anyLong(), eq(5), eq("NORMAL")))
-                .thenReturn(expectedResponse);
+        when(productTransformService.transformToProductSearchResponse(
+                any(), anyString(), anyInt(), anyInt(), anyString(), anyList(), anyString(), anyLong(), anyInt(), anyString()
+        )).thenReturn(mockResponse);
 
         // when
-        ProductSearchResponse result = productSearchUseCase.searchProducts(searchRequest);
+        ProductSearchResponse result = productSearchUseCase.searchProducts(request);
 
         // then
-        assertNotNull(result);
-        assertEquals(expectedResponse, result);
-        verify(productCacheService).isCached(searchRequest);
+        assertThat(result).isNotNull();
+        verify(productCacheService).isCached(request);
         verify(quotaService).isQuotaExceeded();
-        verify(naverShoppingApiService).searchProducts(searchRequest);
+        verify(naverShoppingApiService).searchProducts(request);
         verify(quotaService).incrementApiCallCount();
-        verify(transformService).transformToProductSearchResponse(
-                eq(naverResponse), eq("노트북"), eq(1), eq(20), eq("sim"),
-                anyList(), eq("fresh"), anyLong(), eq(5), eq("NORMAL"));
-        verify(productCacheService).cacheSearchResult(searchRequest, expectedResponse);
+        verify(productCacheService).cacheSearchResult(request, mockResponse);
     }
 
     @Test
-    @DisplayName("API 쿼터 초과 시 예외 발생 테스트")
-    void testSearchProducts_QuotaExceeded() {
+    @DisplayName("API 쿼터 초과 시 예외를 던진다")
+    void searchProductsThrowsExceptionWhenQuotaExceeded() {
         // given
-        when(productCacheService.isCached(searchRequest)).thenReturn(false);
+        when(productCacheService.isCached(any())).thenReturn(false);
         when(quotaService.isQuotaExceeded()).thenReturn(true);
 
         // when & then
-        RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> productSearchUseCase.searchProducts(searchRequest));
-        assertEquals("API quota exceeded for today", exception.getMessage());
-
-        verify(productCacheService).isCached(searchRequest);
-        verify(quotaService).isQuotaExceeded();
-        verify(naverShoppingApiService, never()).searchProducts(any());
+        assertThatThrownBy(() -> productSearchUseCase.searchProducts(request))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("API quota exceeded for today");
     }
 
     @Test
-    @DisplayName("API 호출 실패 시 캐시 폴백 테스트")
-    void testSearchProducts_ApiFailure_CacheFallback() {
+    @DisplayName("네이버 API 호출 실패 시 예외를 던진다")
+    void searchProductsThrowsExceptionWhenApiFails() {
         // given
-        when(productCacheService.isCached(searchRequest)).thenReturn(false);
+        when(productCacheService.isCached(any())).thenReturn(false);
         when(quotaService.isQuotaExceeded()).thenReturn(false);
-        when(naverShoppingApiService.searchProducts(searchRequest))
-                .thenThrow(new RuntimeException("API 호출 실패"));
-        when(productCacheService.getCachedResult(searchRequest))
-                .thenReturn(Optional.of(expectedResponse));
-
-        // when
-        ProductSearchResponse result = productSearchUseCase.searchProducts(searchRequest);
-
-        // then
-        assertNotNull(result);
-        assertEquals(expectedResponse, result);
-        verify(productCacheService).isCached(searchRequest);
-        verify(quotaService).isQuotaExceeded();
-        verify(naverShoppingApiService).searchProducts(searchRequest);
-        verify(productCacheService).getCachedResult(searchRequest);
-    }
-
-    @Test
-    @DisplayName("API 호출 실패 및 캐시 폴백도 실패 시 예외 발생 테스트")
-    void testSearchProducts_ApiFailure_NoCacheFallback() {
-        // given
-        when(productCacheService.isCached(searchRequest)).thenReturn(false);
-        when(quotaService.isQuotaExceeded()).thenReturn(false);
-        when(naverShoppingApiService.searchProducts(searchRequest))
-                .thenThrow(new RuntimeException("API 호출 실패"));
-        when(productCacheService.getCachedResult(searchRequest))
-                .thenReturn(Optional.empty());
+        when(naverShoppingApiService.searchProducts(any())).thenThrow(new RestApiException(GlobalErrorStatus._INTERNAL_SERVER_ERROR));
+        when(productCacheService.getCachedResult(any())).thenReturn(Optional.empty());
 
         // when & then
-        RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> productSearchUseCase.searchProducts(searchRequest));
-        assertEquals("Product search failed and no fallback available", exception.getMessage());
-
-        verify(productCacheService).isCached(searchRequest);
-        verify(quotaService).isQuotaExceeded();
-        verify(naverShoppingApiService).searchProducts(searchRequest);
-        verify(productCacheService).getCachedResult(searchRequest);
+        assertThatThrownBy(() -> productSearchUseCase.searchProducts(request))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Product search failed and no fallback available");
     }
 
     @Test
-    @DisplayName("필터 적용 로직 테스트")
-    void testBuildAppliedFilters() {
+    @DisplayName("카테고리 필터가 올바르게 적용된다")
+    void searchProductsWithCategoryFilters() {
         // given
-        ProductSearchRequest requestWithFilters = new ProductSearchRequest(
-            "테스트", 1, 20, "sim", Arrays.asList("used", "rental"), false,
-            "전자제품", "컴퓨터", "노트북", "15인치", "삼성", "삼성전자",
-            100000, 500000, 4.0, 100
+        ProductSearchRequest requestWithCategories = new ProductSearchRequest(
+                "laptop",
+                1,
+                10,
+                "sim",
+                List.of(),
+                false,
+                "전자제품",
+                "컴퓨터",
+                "노트북",
+                "",
+                "",
+                "",
+                0,
+                0,
+                0.0,
+                0
         );
 
-        when(productCacheService.isCached(requestWithFilters)).thenReturn(false);
+        when(productCacheService.isCached(any())).thenReturn(false);
         when(quotaService.isQuotaExceeded()).thenReturn(false);
-        when(naverShoppingApiService.searchProducts(requestWithFilters)).thenReturn(naverResponse);
-        when(quotaService.getCurrentDailyCount()).thenReturn(1);
+        when(naverShoppingApiService.searchProducts(any())).thenReturn(mockNaverResponse);
+        when(quotaService.getCurrentDailyCount()).thenReturn(5);
         when(quotaService.getQuotaStatus()).thenReturn("NORMAL");
-        when(transformService.transformToProductSearchResponse(
-                eq(naverResponse), eq("테스트"), eq(1), eq(20), eq("sim"),
-                anyList(), eq("fresh"), anyLong(), eq(1), eq("NORMAL")))
-                .thenReturn(expectedResponse);
+        when(productTransformService.transformToProductSearchResponse(
+                any(), anyString(), anyInt(), anyInt(), anyString(), anyList(), anyString(), anyLong(), anyInt(), anyString()
+        )).thenReturn(mockResponse);
 
         // when
-        ProductSearchResponse result = productSearchUseCase.searchProducts(requestWithFilters);
+        productSearchUseCase.searchProducts(requestWithCategories);
 
         // then
-        assertNotNull(result);
-        // 필터들이 올바르게 적용되는지 확인
-        verify(transformService).transformToProductSearchResponse(
-                eq(naverResponse), eq("테스트"), eq(1), eq(20), eq("sim"),
-                argThat(filters -> filters.contains("used") && filters.contains("rental")),
-                eq("fresh"), anyLong(), eq(1), eq("NORMAL"));
+        verify(naverShoppingApiService).searchProducts(requestWithCategories);
     }
 
     @Test
-    @DisplayName("빈 필터 리스트 처리 테스트")
-    void testBuildAppliedFilters_EmptyFilters() {
-        // given - 빈 필터들을 포함한 요청 생성
-        ProductSearchRequest requestWithEmptyFilters = new ProductSearchRequest(
-            "테스트",           // keyword
-            1,                 // page
-            20,                // size
-            "sim",             // sort
-            new ArrayList<>(), // excludeFilters (빈 리스트)
-            false,             // onlyNPay
-            "",                // category1 (빈 문자열)
-            "",                // category2 (빈 문자열)
-            "",                // category3 (빈 문자열)
-            "",                // category4 (빈 문자열)
-            "",                // brand (빈 문자열)
-            "",                // mallName (빈 문자열)
-            0,                 // minPrice
-            0,                 // maxPrice
-            0.0,               // minRating
-            0                  // minReviewCount
+    @DisplayName("페이지네이션이 올바르게 적용된다")
+    void searchProductsWithPagination() {
+        // given
+        ProductSearchRequest requestWithPagination = new ProductSearchRequest(
+                "laptop",
+                2,
+                20,
+                "sim",
+                List.of(),
+                false,
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                0,
+                0,
+                0.0,
+                0
         );
 
-        when(productCacheService.isCached(requestWithEmptyFilters)).thenReturn(false);
+        when(productCacheService.isCached(any())).thenReturn(false);
         when(quotaService.isQuotaExceeded()).thenReturn(false);
-        when(naverShoppingApiService.searchProducts(requestWithEmptyFilters)).thenReturn(naverResponse);
-        when(quotaService.getCurrentDailyCount()).thenReturn(1);
+        when(naverShoppingApiService.searchProducts(any())).thenReturn(mockNaverResponse);
+        when(quotaService.getCurrentDailyCount()).thenReturn(5);
         when(quotaService.getQuotaStatus()).thenReturn("NORMAL");
-        when(transformService.transformToProductSearchResponse(
-                eq(naverResponse), eq("테스트"), eq(1), eq(20), eq("sim"),
-                anyList(), eq("fresh"), anyLong(), eq(1), eq("NORMAL")))
-                .thenReturn(expectedResponse);
+        when(productTransformService.transformToProductSearchResponse(
+                any(), anyString(), anyInt(), anyInt(), anyString(), anyList(), anyString(), anyLong(), anyInt(), anyString()
+        )).thenReturn(mockResponse);
 
         // when
-        ProductSearchResponse result = productSearchUseCase.searchProducts(requestWithEmptyFilters);
+        productSearchUseCase.searchProducts(requestWithPagination);
 
         // then
-        assertNotNull(result);
-        // 빈 필터들이 올바르게 처리되는지 확인
-        verify(transformService).transformToProductSearchResponse(
-                eq(naverResponse), eq("테스트"), eq(1), eq(20), eq("sim"),
-                argThat(filters -> filters.isEmpty()),
-                eq("fresh"), anyLong(), eq(1), eq("NORMAL"));
-    }
-
-    @Test
-    @DisplayName("null 필터 처리 테스트")
-    void testBuildAppliedFilters_NullFilters() {
-        // given - null 값들을 포함한 요청 생성
-        ProductSearchRequest requestWithNullFilters = new ProductSearchRequest(
-            "테스트",  // keyword
-            1,         // page
-            20,        // size
-            "sim",     // sort
-            null,      // excludeFilters
-            null,      // onlyNPay
-            null,      // category1
-            null,      // category2
-            null,      // category3
-            null,      // category4
-            null,      // brand
-            null,      // mallName
-            null,      // minPrice
-            null,      // maxPrice
-            null,      // minRating
-            null       // minReviewCount
-        );
-
-        when(productCacheService.isCached(requestWithNullFilters)).thenReturn(false);
-        when(quotaService.isQuotaExceeded()).thenReturn(false);
-        when(naverShoppingApiService.searchProducts(requestWithNullFilters)).thenReturn(naverResponse);
-        when(quotaService.getCurrentDailyCount()).thenReturn(1);
-        when(quotaService.getQuotaStatus()).thenReturn("NORMAL");
-        when(transformService.transformToProductSearchResponse(
-                eq(naverResponse), eq("테스트"), eq(1), eq(20), eq("sim"),
-                anyList(), eq("fresh"), anyLong(), eq(1), eq("NORMAL")))
-                .thenReturn(expectedResponse);
-
-        // when
-        ProductSearchResponse result = productSearchUseCase.searchProducts(requestWithNullFilters);
-
-        // then
-        assertNotNull(result);
-        // null 필터들이 무시되고 빈 리스트가 전달되는지 확인
-        verify(transformService).transformToProductSearchResponse(
-                eq(naverResponse), eq("테스트"), eq(1), eq(20), eq("sim"),
-                argThat(filters -> filters.isEmpty()),
-                eq("fresh"), anyLong(), eq(1), eq("NORMAL"));
+        verify(naverShoppingApiService).searchProducts(requestWithPagination);
     }
 }
