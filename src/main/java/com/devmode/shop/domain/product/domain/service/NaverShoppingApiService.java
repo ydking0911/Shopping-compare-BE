@@ -5,6 +5,10 @@ import com.devmode.shop.domain.product.application.dto.response.NaverShoppingRes
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.RestClientException;
@@ -40,10 +44,19 @@ public class NaverShoppingApiService {
         try {
             String url = buildUrl(apiUrl, queryParams);
             
-            // RestTemplate으로는 헤더를 쉽게 설정할 수 없으므로, 
-            // HttpHeaders와 HttpEntity를 사용하거나 다른 방법을 고려해야 합니다.
-            // 현재는 기본 호출만 구현합니다.
-            NaverShoppingResponse response = restTemplate.getForObject(url, NaverShoppingResponse.class);
+            // 네이버 API 호출 시 필수 헤더(X-Naver-Client-Id, X-Naver-Client-Secret)를 추가합니다.
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("X-Naver-Client-Id", clientId);
+            headers.set("X-Naver-Client-Secret", clientSecret);
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+            
+            ResponseEntity<NaverShoppingResponse> responseEntity = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                entity,
+                NaverShoppingResponse.class
+            );
+            NaverShoppingResponse response = responseEntity.getBody();
             
             if (response != null) {
                 log.info("[NaverShoppingApi] Search successful. Total results: {}", response.total());

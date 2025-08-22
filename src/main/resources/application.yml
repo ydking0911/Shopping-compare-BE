@@ -1,7 +1,7 @@
 # Secret 설정 파일 import
 spring:
-  profiles:
-    include: secret
+  config:
+    import: optional:secret/application-secret.yml
   jpa:
     hibernate:
       ddl-auto: create-drop

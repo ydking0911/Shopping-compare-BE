@@ -83,6 +83,7 @@ class ProductFavoriteTest {
         assertNull(favorite.getMemo());
         assertNull(favorite.getFavoriteGroup());
         assertFalse(favorite.getNotificationEnabled()); // 기본값 false
+        assertNotNull(favorite.getPriority());
         assertEquals(3, favorite.getPriority()); // 기본값 3
         assertTrue(favorite.getIsActive()); // 기본값 true
         assertNull(favorite.getTargetPrice());

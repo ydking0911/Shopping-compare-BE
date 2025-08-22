@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -145,7 +146,7 @@ public class ProductNormalizationService {
         }
         
         return originalPrice.subtract(price)
-                .divide(originalPrice, 2, BigDecimal.ROUND_HALF_UP)
+                .divide(originalPrice, 2, RoundingMode.HALF_UP)
                 .multiply(new BigDecimal("100"));
     }
     
