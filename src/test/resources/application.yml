@@ -1,18 +1,35 @@
-# Secret 설정 파일 import
+# 테스트 환경 기본 설정
 spring:
-  config:
-    import: optional:secret/application-secret.yml
+  profiles:
+    active: test
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
   jpa:
     hibernate:
       ddl-auto: create-drop
-    show-sql: true
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: 
+      database: 0
 
-# JWT 설정 (secret 파일에서 관리)
-# jwt 설정은 application-secret.yml로 이동
+# JWT 설정과 네이버 API 설정은 application-secret.yml에서 관리
 
-# 네이버 쇼핑 API 설정 (secret 파일에서 관리)
-# naver 설정은 application-secret.yml로 이동
+# 로깅 설정
+logging:
+  level:
+    com.devmode.shop: DEBUG
+    org.springframework.security: WARN
 
+# 인증 제외 경로 설정
 exclude-auth-path-patterns:
   paths:
     - path-pattern: /api/users/signup
@@ -35,13 +52,12 @@ exclude-auth-path-patterns:
       method: GET
     - path-pattern: /webjars
       method: GET
-    - path-pattern: /api/batch/transcript/execute
-      method: POST
     - path-pattern: /actuator/**
       method: GET
     - path-pattern: /**
       method: OPTIONS
 
+# 블랙리스트 제외 경로 설정
 exclude-blacklist-path-patterns:
   paths:
     - path-pattern: /api/users/signup
@@ -69,20 +85,9 @@ exclude-blacklist-path-patterns:
     - path-pattern: /**
       method: OPTIONS
 
+# CORS 설정
 cors:
   allowed-origins: "http://localhost:5173,http://localhost:3000"
   allowed-methods: "GET,POST,PUT,PATCH,DELETE,OPTIONS"
   allowed-headers: "Authorization,Content-Type,Accept"
   max-age: 3600
-
-# Swagger
-springdoc:
-  api-docs:
-    enabled: true
-  swagger-ui:
-    groups-order: DESC # path, query, body, response 순서대로 출력
-    tags-sorter: alpha # 태그를 알파벳 순으로 정렬
-    operations-sorter: method # delete - get - patch - post - put 순으로 정렬
-    enabled: true
-  paths-to-match:
-    - /api/**
