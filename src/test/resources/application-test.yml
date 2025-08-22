@@ -1,0 +1,38 @@
+# 테스트 환경용 Secret 설정
+# 네이버 API 설정
+naver:
+  shopping:
+    client-id: test-naver-client-id
+    client-secret: test-naver-client-secret
+    api-url: https://openapi.naver.com/v1/search/shop.json
+    max-daily-calls: 25000
+    warning-threshold: 20000
+
+# JWT 설정
+jwt:
+  key: fdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafda
+  access:
+    expiration: 3600000  # 1시간 (밀리초)
+  refresh:
+    expiration: 2592000000  # 30일 (밀리초)
+
+# Redis 설정
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: 
+      database: 0
+  # 데이터베이스 설정 (테스트용 H2)
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+
+# 로깅 설정
+logging:
+  level:
+    com.devmode.shop: DEBUG
+    org.springframework.security: WARN

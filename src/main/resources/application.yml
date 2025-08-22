@@ -1,0 +1,92 @@
+# Secret 설정 파일 import
+spring:
+  config:
+    import: optional:secret/application-secret.yml
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+
+# JWT 설정 (secret 파일에서 관리)
+# jwt 설정은 application-secret.yml로 이동
+
+# 네이버 쇼핑 API 설정 (secret 파일에서 관리)
+# naver 설정은 application-secret.yml로 이동
+
+exclude-auth-path-patterns:
+  paths:
+    - path-pattern: /api/users/signup
+      method: POST
+    - path-pattern: /api/users/login
+      method: POST
+    - path-pattern: /api/products/search
+      method: GET
+    - path-pattern: /api/products/health
+      method: GET
+    - path-pattern: /api/trends/health
+      method: GET
+    - path-pattern: /swagger-ui.html
+      method: GET
+    - path-pattern: /swagger-ui/index.html
+      method: GET
+    - path-pattern: /swagger-ui/**
+      method: GET
+    - path-pattern: /v3/api-docs
+      method: GET
+    - path-pattern: /v3/api-docs/swagger-config
+      method: GET
+    - path-pattern: /webjars
+      method: GET
+    - path-pattern: /api/batch/transcript/execute
+      method: POST
+    - path-pattern: /actuator/**
+      method: GET
+    - path-pattern: /**
+      method: OPTIONS
+
+exclude-blacklist-path-patterns:
+  paths:
+    - path-pattern: /api/users/signup
+      method: POST
+    - path-pattern: /api/users/login
+      method: POST
+    - path-pattern: /api/products/search
+      method: GET
+    - path-pattern: /api/products/health
+      method: GET
+    - path-pattern: /api/trends/health
+      method: GET
+    - path-pattern: /swagger-ui.html
+      method: GET
+    - path-pattern: /swagger-ui/index.html
+      method: GET
+    - path-pattern: /swagger-ui/**
+      method: GET
+    - path-pattern: /v3/api-docs
+      method: GET
+    - path-pattern: /v3/api-docs/swagger-config
+      method: GET
+    - path-pattern: /webjars
+      method: GET
+    - path-pattern: /actuator/**
+      method: GET
+    - path-pattern: /**
+      method: OPTIONS
+
+cors:
+  allowed-origins: "http://localhost:5173,http://localhost:3000"
+  allowed-methods: "GET,POST,PUT,PATCH,DELETE,OPTIONS"
+  allowed-headers: "Authorization,Content-Type,Accept"
+  max-age: 3600
+
+# Swagger
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    groups-order: DESC # path, query, body, response 순서대로 출력
+    tags-sorter: alpha # 태그를 알파벳 순으로 정렬
+    operations-sorter: method # delete - get - patch - post - put 순으로 정렬
+    enabled: true
+  paths-to-match:
+    - /api/**

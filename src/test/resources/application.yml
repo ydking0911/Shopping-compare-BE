@@ -1,0 +1,93 @@
+# 테스트 환경 기본 설정
+spring:
+  profiles:
+    active: test
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: 
+      database: 0
+
+# JWT 설정과 네이버 API 설정은 application-secret.yml에서 관리
+
+# 로깅 설정
+logging:
+  level:
+    com.devmode.shop: DEBUG
+    org.springframework.security: WARN
+
+# 인증 제외 경로 설정
+exclude-auth-path-patterns:
+  paths:
+    - path-pattern: /api/users/signup
+      method: POST
+    - path-pattern: /api/users/login
+      method: POST
+    - path-pattern: /api/products/search
+      method: GET
+    - path-pattern: /api/products/health
+      method: GET
+    - path-pattern: /swagger-ui.html
+      method: GET
+    - path-pattern: /swagger-ui/index.html
+      method: GET
+    - path-pattern: /swagger-ui/**
+      method: GET
+    - path-pattern: /v3/api-docs
+      method: GET
+    - path-pattern: /v3/api-docs/swagger-config
+      method: GET
+    - path-pattern: /webjars
+      method: GET
+    - path-pattern: /actuator/**
+      method: GET
+    - path-pattern: /**
+      method: OPTIONS
+
+# 블랙리스트 제외 경로 설정
+exclude-blacklist-path-patterns:
+  paths:
+    - path-pattern: /api/users/signup
+      method: POST
+    - path-pattern: /api/users/login
+      method: POST
+    - path-pattern: /api/products/search
+      method: GET
+    - path-pattern: /api/products/health
+      method: GET
+    - path-pattern: /swagger-ui.html
+      method: GET
+    - path-pattern: /swagger-ui/index.html
+      method: GET
+    - path-pattern: /swagger-ui/**
+      method: GET
+    - path-pattern: /v3/api-docs
+      method: GET
+    - path-pattern: /v3/api-docs/swagger-config
+      method: GET
+    - path-pattern: /webjars
+      method: GET
+    - path-pattern: /actuator/**
+      method: GET
+    - path-pattern: /**
+      method: OPTIONS
+
+# CORS 설정
+cors:
+  allowed-origins: "http://localhost:5173,http://localhost:3000"
+  allowed-methods: "GET,POST,PUT,PATCH,DELETE,OPTIONS"
+  allowed-headers: "Authorization,Content-Type,Accept"
+  max-age: 3600
