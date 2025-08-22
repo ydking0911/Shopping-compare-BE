@@ -80,7 +80,7 @@ public class TrendTransformService {
 
     private DeviceDistribution transformDeviceDistribution(List<DataLabDistribution> deviceDist) {
         if (deviceDist == null || deviceDist.isEmpty()) {
-            return new com.devmode.shop.domain.trend.application.dto.response.common.DeviceDistribution(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+            return new DeviceDistribution(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
         }
 
         BigDecimal mobileRatio = BigDecimal.ZERO;
@@ -95,12 +95,12 @@ public class TrendTransformService {
             }
         }
 
-        return new com.devmode.shop.domain.trend.application.dto.response.common.DeviceDistribution(mobileRatio, pcRatio, tabletRatio);
+        return new DeviceDistribution(mobileRatio, pcRatio, tabletRatio);
     }
 
     private GenderDistribution transformGenderDistribution(List<DataLabDistribution> genderDist) {
         if (genderDist == null || genderDist.isEmpty()) {
-            return new com.devmode.shop.domain.trend.application.dto.response.common.GenderDistribution(BigDecimal.ZERO, BigDecimal.ZERO);
+            return new GenderDistribution(BigDecimal.ZERO, BigDecimal.ZERO);
         }
 
         BigDecimal maleRatio = BigDecimal.ZERO;
@@ -113,12 +113,12 @@ public class TrendTransformService {
             }
         }
 
-        return new com.devmode.shop.domain.trend.application.dto.response.common.GenderDistribution(maleRatio, femaleRatio);
+        return new GenderDistribution(maleRatio, femaleRatio);
     }
 
     private AgeDistribution transformAgeDistribution(List<DataLabDistribution> ageDist) {
         if (ageDist == null || ageDist.isEmpty()) {
-            return new com.devmode.shop.domain.trend.application.dto.response.common.AgeDistribution(
+            return new AgeDistribution(
                     BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
                     BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO
             );
@@ -138,12 +138,12 @@ public class TrendTransformService {
             }
         }
 
-        return new com.devmode.shop.domain.trend.application.dto.response.common.AgeDistribution(age10s, age20s, age30s, age40s, age50s, age60s);
+        return new AgeDistribution(age10s, age20s, age30s, age40s, age50s, age60s);
     }
 
     private TrendSummary buildTrendSummary(List<TrendDataPoint> dataPoints) {
         if (dataPoints.isEmpty()) {
-            return new com.devmode.shop.domain.trend.application.dto.response.trend.TrendSummary(
+            return new TrendSummary(
                     BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
                     0L, "STABLE", BigDecimal.ZERO
             );
@@ -154,7 +154,7 @@ public class TrendTransformService {
         BigDecimal minRatio = dataPoints.get(0).ratio();
         Long totalClickCount = 0L;
 
-        for (com.devmode.shop.domain.trend.application.dto.response.trend.TrendDataPoint point : dataPoints) {
+        for (TrendDataPoint point : dataPoints) {
             totalRatio = totalRatio.add(point.ratio());
             maxRatio = maxRatio.max(point.ratio());
             minRatio = minRatio.min(point.ratio());
@@ -165,7 +165,7 @@ public class TrendTransformService {
         String trendDirection = determineTrendDirection(dataPoints);
         BigDecimal trendStrength = calculateTrendStrength(dataPoints);
 
-        return new com.devmode.shop.domain.trend.application.dto.response.trend.TrendSummary(
+        return new TrendSummary(
                 avgRatio, maxRatio, minRatio, totalClickCount, trendDirection, trendStrength
         );
     }
