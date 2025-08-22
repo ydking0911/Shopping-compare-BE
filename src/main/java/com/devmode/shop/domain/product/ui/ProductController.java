@@ -3,28 +3,26 @@ package com.devmode.shop.domain.product.ui;
 import com.devmode.shop.domain.product.application.dto.request.ProductSearchRequest;
 import com.devmode.shop.domain.product.application.dto.response.ProductResponse;
 import com.devmode.shop.domain.product.application.dto.response.ProductSearchResponse;
-import com.devmode.shop.domain.product.domain.service.ProductService;
+import com.devmode.shop.domain.product.application.usecase.ProductSearchUseCase;
 import com.devmode.shop.global.annotation.ProductApi;
 import com.devmode.shop.global.common.BaseResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 
-@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/products")
 public class ProductController implements ProductApi {
     
-    private final ProductService productService;
+    private final ProductSearchUseCase productSearchUseCase;
     
     @PostMapping("/search")
     @Override
     public BaseResponse<ProductSearchResponse> searchProducts(@Valid @RequestBody ProductSearchRequest request) {
-        ProductSearchResponse response = productService.searchProducts(request);
+        ProductSearchResponse response = productSearchUseCase.searchProducts(request);
         return BaseResponse.onSuccess(response);
     }
     
@@ -47,7 +45,7 @@ public class ProductController implements ProductApi {
             null, null, null, null
         );
 
-        ProductSearchResponse response = productService.searchProducts(request);
+        ProductSearchResponse response = productSearchUseCase.searchProducts(request);
         ProductResponse productResponse = ProductResponse.create(response);
         return BaseResponse.onSuccess(productResponse);
     }
@@ -55,7 +53,7 @@ public class ProductController implements ProductApi {
     @GetMapping("/health")
     @Override
     public BaseResponse<String> healthCheck() {
-        String healthStatus = productService.checkHealth();
+        String healthStatus = "상품 검색 서비스가 정상적으로 작동 중입니다.";
         return BaseResponse.onSuccess(healthStatus);
     }
 }
