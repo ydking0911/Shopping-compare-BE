@@ -3,8 +3,10 @@ package com.devmode.shop.domain.trend.ui;
 import com.devmode.shop.domain.trend.application.dto.request.TrendSearchRequest;
 import com.devmode.shop.domain.trend.application.dto.response.trend.TrendSearchResponse;
 import com.devmode.shop.domain.trend.application.usecase.TrendSearchUseCase;
+import com.devmode.shop.global.annotation.CurrentUser;
 import com.devmode.shop.global.annotation.TrendApi;
 import com.devmode.shop.global.common.BaseResponse;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/trends")
@@ -83,5 +86,48 @@ public class TrendController implements TrendApi {
     public BaseResponse<String> healthCheck() {
         String healthStatus = "트렌드 인사이트 서비스가 정상적으로 작동 중입니다.";
         return BaseResponse.onSuccess(healthStatus);
+    }
+
+    /**
+     * 사용자 맞춤 트렌드 검색 (검색 기록 기반)
+     */
+    @PostMapping("/search/personalized")
+    public BaseResponse<TrendSearchResponse> searchPersonalizedTrends(
+            @Parameter(hidden = true) @CurrentUser String userId,
+            @Valid @RequestBody TrendSearchRequest request) {
+        // TODO: 개인화된 트렌드 검색 로직 구현 (현재는 기본 검색)
+        TrendSearchResponse response = trendSearchUseCase.searchTrends(request);
+        return BaseResponse.onSuccess(response);
+    }
+
+    /**
+     * 사용자 검색 기록 조회
+     */
+    @GetMapping("/search/history")
+    public BaseResponse<List<String>> getSearchHistory(
+            @Parameter(hidden = true) @CurrentUser String userId) {
+        // TODO: 검색 기록 조회 로직 구현
+        return BaseResponse.onSuccess(List.of());
+    }
+
+    /**
+     * 사용자 관심 키워드 설정
+     */
+    @PostMapping("/keywords/interests")
+    public BaseResponse<Void> setInterestKeywords(
+            @Parameter(hidden = true) @CurrentUser String userId,
+            @RequestBody List<String> keywords) {
+        // TODO: 관심 키워드 설정 로직 구현
+        return BaseResponse.onSuccess();
+    }
+
+    /**
+     * 사용자 관심 키워드 조회
+     */
+    @GetMapping("/keywords/interests")
+    public BaseResponse<List<String>> getInterestKeywords(
+            @Parameter(hidden = true) @CurrentUser String userId) {
+        // TODO: 관심 키워드 조회 로직 구현
+        return BaseResponse.onSuccess(List.of());
     }
 }

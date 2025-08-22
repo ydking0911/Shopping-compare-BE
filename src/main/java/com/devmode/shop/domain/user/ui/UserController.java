@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import com.devmode.shop.domain.user.application.dto.response.ProfileResponse;
 import com.devmode.shop.domain.user.application.usecase.UserProfileUseCase;
 import com.devmode.shop.global.annotation.CurrentUser;
-import com.devmode.shop.global.annotation.UserProfileApi;
+import com.devmode.shop.global.swagger.UserProfileApi;
 import com.devmode.shop.global.common.BaseResponse;
 
 import lombok.RequiredArgsConstructor;

@@ -6,6 +6,7 @@ import com.devmode.shop.global.exception.code.status.GlobalErrorStatus;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -30,7 +31,9 @@ public class ExceptionAdvice extends ResponseEntityExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<BaseResponse<String>> handle500Exception(Exception e) {
         log.error("[handle500] unexpected exception: {}", e.getMessage(), e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(BaseResponse.onFailure(GlobalErrorStatus._INTERNAL_SERVER_ERROR.getCode().getCode(), 
+                        "서버 내부 오류가 발생했습니다.", (String) null));
     }
 
     /*
@@ -43,6 +46,18 @@ public class ExceptionAdvice extends ResponseEntityExceptionHandler {
                 e.getErrorCode().getCode(), e.getErrorCode().getMessage());
         BaseCode errorCode = e.getErrorCode();
         return handleExceptionInternal(errorCode);
+    }
+
+    /*
+     * DataIntegrityViolationException 발생 시 예외 처리
+     * 데이터베이스 제약조건 위반 시 발생
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<BaseResponse<String>> handleDataIntegrityViolation(DataIntegrityViolationException e) {
+        log.warn("[handleDataIntegrityViolation] database constraint violation: {}", e.getMessage());
+        String message = "데이터 저장 중 제약조건 위반이 발생했습니다. 필수 필드를 확인해주세요.";
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(BaseResponse.onFailure(GlobalErrorStatus._VALIDATION_ERROR.getCode().getCode(), message, (String) null));
     }
 
     /*

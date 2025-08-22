@@ -25,6 +25,8 @@ exclude-auth-path-patterns:
       method: GET
     - path-pattern: /api/trends/health
       method: GET
+    - path-pattern: /api/clickout/log-click
+      method: POST
     - path-pattern: /swagger-ui.html
       method: GET
     - path-pattern: /swagger-ui/index.html
@@ -56,6 +58,8 @@ exclude-blacklist-path-patterns:
       method: GET
     - path-pattern: /api/trends/health
       method: GET
+    - path-pattern: /api/clickout/log-click
+      method: POST
     - path-pattern: /swagger-ui.html
       method: GET
     - path-pattern: /swagger-ui/index.html

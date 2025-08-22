@@ -1,4 +1,4 @@
-package com.devmode.shop.global.annotation;
+package com.devmode.shop.global.swagger;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
