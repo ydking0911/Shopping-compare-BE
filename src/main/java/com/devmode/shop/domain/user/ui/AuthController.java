@@ -1,6 +1,6 @@
 package com.devmode.shop.domain.user.ui;
 
-import com.devmode.shop.global.annotation.AuthApi;
+import com.devmode.shop.global.swagger.AuthApi;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,10 +13,12 @@ import com.devmode.shop.domain.user.application.dto.request.TokenReissueRequest;
 import com.devmode.shop.domain.user.application.dto.response.LoginResponse;
 import com.devmode.shop.domain.user.application.dto.response.TokenReissueResponse;
 import com.devmode.shop.domain.user.application.usecase.UserAuthUseCase;
+import com.devmode.shop.global.annotation.CurrentUser;
 import com.devmode.shop.global.common.BaseResponse;
 
-import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -38,8 +40,18 @@ public class AuthController implements AuthApi {
 	}
 
 	@DeleteMapping("/logout")
+	@Override
 	public BaseResponse<Void> logout(HttpServletRequest request) {
 		userAuthUseCase.logout(request);
+		return BaseResponse.onSuccess();
+	}
+
+	/**
+	 * 사용자 ID로 로그아웃 (@CurrentUser 사용)
+	 */
+	@DeleteMapping("/logout/user")
+	public BaseResponse<Void> logoutByUserId(@Parameter(hidden = true) @CurrentUser String userId) {
+		userAuthUseCase.logout(userId);
 		return BaseResponse.onSuccess();
 	}
 	

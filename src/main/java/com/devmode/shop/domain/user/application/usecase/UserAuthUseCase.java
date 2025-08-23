@@ -74,6 +74,15 @@ public class UserAuthUseCase {
 		tokenWhitelistService.deleteWhitelistToken(accessToken);
 		tokenBlacklistService.blacklist(accessToken, expiration);
 	}
+
+	/**
+	 * 사용자 ID로 로그아웃 처리
+	 * @CurrentUser 어노테이션과 함께 사용하기 위한 메서드
+	 */
+	public void logout(String userId) {
+		// 사용자의 리프레시 토큰만 삭제 (액세스 토큰은 만료 시까지 유효)
+		refreshTokenService.deleteRefreshToken(userId);
+	}
 	
 	public TokenReissueResponse reissueToken(TokenReissueRequest request) {
 		String refreshToken = request.refreshToken();
