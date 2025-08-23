@@ -14,6 +14,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PriceTrackingService {
     
+    private static final String NAVER_SOURCE = "naver";
+    
     private final PriceHistoryRepository priceHistoryRepository;
     
     @Transactional
@@ -44,7 +46,7 @@ public class PriceTrackingService {
                 .productId(productId)
                 .productTitle(productTitle)
                 .price(currentPrice)
-                .source("naver")
+                .source(NAVER_SOURCE)
                 .recordedAt(LocalDateTime.now())
                 .mallName(mallName)
                 .priceChange(priceChange)
