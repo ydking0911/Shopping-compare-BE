@@ -148,4 +148,46 @@ public class NaverShoppingApiService {
         
         return params;
     }
+    
+    /**
+     * 상품 ID로 상품 정보 조회
+     */
+    public NaverShoppingResponse searchProductById(String productId) {
+        log.info("[NaverShoppingApi] Searching product by ID: {}", productId);
+        
+        try {
+            // 상품 ID로 검색하는 경우, 정확한 매칭을 위해 상품명으로 검색
+            // 실제로는 네이버 API에서 상품 ID로 직접 조회하는 방법이 없어서
+            // 상품명이나 다른 식별자로 검색하는 방식 사용
+            Map<String, String> queryParams = new HashMap<>();
+            queryParams.put("query", productId);
+            queryParams.put("display", "1");
+            queryParams.put("start", "1");
+            queryParams.put("sort", "sim"); // 정확도순 정렬
+            
+            String url = buildUrl(apiUrl, queryParams);
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("X-Naver-Client-Id", clientId);
+            headers.set("X-Naver-Client-Secret", clientSecret);
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+            
+            ResponseEntity<NaverShoppingResponse> responseEntity = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                entity,
+                NaverShoppingResponse.class
+            );
+            
+            NaverShoppingResponse response = responseEntity.getBody();
+            if (response != null) {
+                log.info("[NaverShoppingApi] Product search by ID successful. Found: {}", response.total());
+            }
+            
+            return response;
+        } catch (RestClientException e) {
+            log.error("[NaverShoppingApi] Product search by ID failed for productId: {}. Error: {}", productId, e.getMessage());
+            throw e;
+        }
+    }
 }

@@ -16,10 +16,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/clickout")
+@Slf4j
 public class ClickoutController implements ClickoutApi {
     
     private final LogProductClickUseCase logProductClickUseCase;
@@ -74,13 +76,16 @@ public class ClickoutController implements ClickoutApi {
      * 사용자별 클릭 기록 조회
      */
     @GetMapping("/user/click-history")
-    public BaseResponse<List<ClickoutAnalyticsResponse.ClickoutStatistic>> getUserClickHistory(
+    public BaseResponse<List<String>> getUserClickHistory(
             @Parameter(hidden = true) @CurrentUser String userId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         
-        // TODO: 사용자별 클릭 기록 조회 로직 구현
-        return BaseResponse.onSuccess(List.of());
+        // UseCase 호출
+        List<String> clickHistory = 
+            clickoutAnalyticsUseCase.getUserClickHistory(userId, startDate, endDate);
+        
+        return BaseResponse.onSuccess(clickHistory);
     }
 
     /**
@@ -90,8 +95,10 @@ public class ClickoutController implements ClickoutApi {
     public BaseResponse<List<String>> getPersonalizedRecommendations(
             @Parameter(hidden = true) @CurrentUser String userId) {
         
-        // TODO: 개인화 추천 로직 구현
-        return BaseResponse.onSuccess(List.of());
+        // UseCase 호출
+        List<String> recommendations = clickoutAnalyticsUseCase.getPersonalizedRecommendations(userId);
+        
+        return BaseResponse.onSuccess(recommendations);
     }
 
     /**
@@ -103,10 +110,9 @@ public class ClickoutController implements ClickoutApi {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         
-        // TODO: 사용자별 클릭 통계 조회 로직 구현
-        ClickoutAnalyticsResponse response = new ClickoutAnalyticsResponse(
-                "개인 통계", startDate, endDate, List.of(), List.of(), List.of()
-        );
+        // UseCase 호출
+        ClickoutAnalyticsResponse response = clickoutAnalyticsUseCase.getUserClickStatistics(userId, startDate, endDate);
+        
         return BaseResponse.onSuccess(response);
     }
 }
