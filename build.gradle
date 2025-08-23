@@ -63,7 +63,7 @@ dependencies {
     implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.7.0'
     implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5'
 
-	// Redis
+		// Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-cache'
 

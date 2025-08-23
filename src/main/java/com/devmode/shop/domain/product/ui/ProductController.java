@@ -4,6 +4,10 @@ import com.devmode.shop.domain.product.application.dto.request.ProductSearchRequ
 import com.devmode.shop.domain.product.application.dto.response.ProductResponse;
 import com.devmode.shop.domain.product.application.dto.response.ProductSearchResponse;
 import com.devmode.shop.domain.product.application.usecase.ProductSearchUseCase;
+import com.devmode.shop.domain.product.application.usecase.AddToFavoritesUseCase;
+import com.devmode.shop.domain.product.application.usecase.RemoveFromFavoritesUseCase;
+import com.devmode.shop.domain.product.application.usecase.GetFavoritesUseCase;
+import com.devmode.shop.domain.product.application.usecase.SearchPersonalizedProductsUseCase;
 import com.devmode.shop.global.annotation.CurrentUser;
 import com.devmode.shop.global.swagger.ProductApi;
 import com.devmode.shop.global.common.BaseResponse;
@@ -14,13 +18,19 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/products")
+@Slf4j
 public class ProductController implements ProductApi {
     
     private final ProductSearchUseCase productSearchUseCase;
+    private final AddToFavoritesUseCase addToFavoritesUseCase;
+    private final RemoveFromFavoritesUseCase removeFromFavoritesUseCase;
+    private final GetFavoritesUseCase getFavoritesUseCase;
+    private final SearchPersonalizedProductsUseCase searchPersonalizedProductsUseCase;
     
     @PostMapping("/search")
     @Override
@@ -67,7 +77,9 @@ public class ProductController implements ProductApi {
     public BaseResponse<Void> addToFavorites(
             @Parameter(hidden = true) @CurrentUser String userId,
             @PathVariable String productId) {
-        // TODO: 즐겨찾기 추가 로직 구현
+        // UseCase 호출
+        addToFavoritesUseCase.addToFavorites(userId, productId);
+        
         return BaseResponse.onSuccess();
     }
 
@@ -78,7 +90,9 @@ public class ProductController implements ProductApi {
     public BaseResponse<Void> removeFromFavorites(
             @Parameter(hidden = true) @CurrentUser String userId,
             @PathVariable String productId) {
-        // TODO: 즐겨찾기 제거 로직 구현
+        // UseCase 호출
+        removeFromFavoritesUseCase.removeFromFavorites(userId, productId);
+        
         return BaseResponse.onSuccess();
     }
 
@@ -88,8 +102,10 @@ public class ProductController implements ProductApi {
     @GetMapping("/favorites")
     public BaseResponse<List<String>> getFavorites(
             @Parameter(hidden = true) @CurrentUser String userId) {
-        // TODO: 즐겨찾기 목록 조회 로직 구현
-        return BaseResponse.onSuccess(List.of());
+        // UseCase 호출
+        List<String> productIds = getFavoritesUseCase.getFavorites(userId);
+        
+        return BaseResponse.onSuccess(productIds);
     }
 
     /**
@@ -99,8 +115,9 @@ public class ProductController implements ProductApi {
     public BaseResponse<ProductSearchResponse> searchPersonalizedProducts(
             @Parameter(hidden = true) @CurrentUser String userId,
             @Valid @RequestBody ProductSearchRequest request) {
-        // TODO: 개인화된 검색 로직 구현 (현재는 기본 검색)
-        ProductSearchResponse response = productSearchUseCase.searchProducts(request);
+        // UseCase 호출
+        ProductSearchResponse response = searchPersonalizedProductsUseCase.searchPersonalizedProducts(userId, request);
+        
         return BaseResponse.onSuccess(response);
     }
 }

@@ -50,4 +50,26 @@ public interface PriceHistoryRepository extends JpaRepository<PriceHistory, Long
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );
+    
+    // 사용자별 가격 트렌드 조회
+    @Query("SELECT ph.productId as productId, ph.productTitle as productTitle, " +
+           "ph.priceChange as priceChange, " +
+           "CASE " +
+           "  WHEN ph.priceChangeAmount > 0 THEN (ph.priceChangeAmount / (ph.price - ph.priceChangeAmount)) * 100 " +
+           "  ELSE 0 " +
+           "END as priceChangePercentage, " +
+           "DATE(ph.recordedAt) as recordedDate " +
+           "FROM PriceHistory ph " +
+           "WHERE ph.productId IN (" +
+           "  SELECT DISTINCT pcl.productId FROM ProductClickLog pcl " +
+           "  WHERE pcl.userId = :userId " +
+           "  AND DATE(pcl.clickedAt) BETWEEN :startDate AND :endDate" +
+           ") " +
+           "AND DATE(ph.recordedAt) BETWEEN :startDate AND :endDate " +
+           "ORDER BY ph.recordedAt DESC")
+    List<Object[]> findUserPriceTrends(
+            @Param("userId") String userId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }

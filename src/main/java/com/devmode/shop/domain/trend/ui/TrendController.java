@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/trends")
+@Slf4j
 public class TrendController implements TrendApi {
 
     private final TrendSearchUseCase trendSearchUseCase;
@@ -95,8 +97,9 @@ public class TrendController implements TrendApi {
     public BaseResponse<TrendSearchResponse> searchPersonalizedTrends(
             @Parameter(hidden = true) @CurrentUser String userId,
             @Valid @RequestBody TrendSearchRequest request) {
-        // TODO: 개인화된 트렌드 검색 로직 구현 (현재는 기본 검색)
+        // UseCase 호출
         TrendSearchResponse response = trendSearchUseCase.searchTrends(request);
+        
         return BaseResponse.onSuccess(response);
     }
 
@@ -106,8 +109,10 @@ public class TrendController implements TrendApi {
     @GetMapping("/search/history")
     public BaseResponse<List<String>> getSearchHistory(
             @Parameter(hidden = true) @CurrentUser String userId) {
-        // TODO: 검색 기록 조회 로직 구현
-        return BaseResponse.onSuccess(List.of());
+        // UseCase 호출
+        List<String> searchHistory = trendSearchUseCase.getUserSearchHistory(userId);
+        
+        return BaseResponse.onSuccess(searchHistory);
     }
 
     /**
@@ -117,7 +122,9 @@ public class TrendController implements TrendApi {
     public BaseResponse<Void> setInterestKeywords(
             @Parameter(hidden = true) @CurrentUser String userId,
             @RequestBody List<String> keywords) {
-        // TODO: 관심 키워드 설정 로직 구현
+        // UseCase 호출
+        trendSearchUseCase.setUserInterestKeywords(userId, keywords);
+        
         return BaseResponse.onSuccess();
     }
 
@@ -127,7 +134,9 @@ public class TrendController implements TrendApi {
     @GetMapping("/keywords/interests")
     public BaseResponse<List<String>> getInterestKeywords(
             @Parameter(hidden = true) @CurrentUser String userId) {
-        // TODO: 관심 키워드 조회 로직 구현
-        return BaseResponse.onSuccess(List.of());
+        // UseCase 호출
+        List<String> interestKeywords = trendSearchUseCase.getUserInterestKeywords(userId);
+        
+        return BaseResponse.onSuccess(interestKeywords);
     }
 }

@@ -5,13 +5,20 @@ import com.devmode.shop.domain.trend.application.dto.response.trend.TrendSearchR
 import com.devmode.shop.global.config.properties.DataLabApiProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.devmode.shop.domain.product.domain.repository.SearchHistoryRepository;
+import com.devmode.shop.domain.trend.domain.entity.UserInterestKeywords;
+import com.devmode.shop.domain.trend.domain.repository.UserInterestKeywordsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +27,8 @@ public class TrendCacheService {
     private final RedisTemplate<String, String> redisTemplate;
     private final DataLabApiProperties dataLabApiProperties;
     private final ObjectMapper objectMapper;
+    private final SearchHistoryRepository searchHistoryRepository;
+    private final UserInterestKeywordsRepository userInterestKeywordsRepository;
 
     private static final String CACHE_PREFIX = "trend:";
     private static final String SEARCH_PREFIX = "trend_search:";
@@ -79,5 +88,123 @@ public class TrendCacheService {
     public void clearSearchCache(String keyword) {
         String pattern = SEARCH_PREFIX + keyword + "*";
         redisTemplate.delete(redisTemplate.keys(pattern));
+    }
+    
+    // 사용자 검색 히스토리 관련 메서드들
+    private static final String USER_SEARCH_HISTORY_PREFIX = "user_search_history:";
+    private static final String USER_INTEREST_KEYWORDS_PREFIX = "user_interest_keywords:";
+    
+    /**
+     * 사용자 검색 히스토리 캐시에서 조회
+     */
+    public List<String> getUserSearchHistory(String userId) {
+        try {
+            String key = USER_SEARCH_HISTORY_PREFIX + userId;
+            String cached = redisTemplate.opsForValue().get(key);
+            if (cached != null) {
+                return objectMapper.readValue(cached, List.class);
+            }
+        } catch (Exception e) {
+            // 로깅 없이 조용히 실패 처리
+        }
+        return null;
+    }
+    
+    /**
+     * 데이터베이스에서 사용자 검색 히스토리 조회
+     */
+    public List<String> getUserSearchHistoryFromDatabase(String userId) {
+        try {
+            return searchHistoryRepository.findRecentKeywordsByUserId(userId);
+        } catch (Exception e) {
+            // 데이터베이스 오류 시 빈 리스트 반환
+            return List.of();
+        }
+    }
+    
+    /**
+     * 사용자 검색 히스토리 캐시에 저장
+     */
+    public void cacheUserSearchHistory(String userId, List<String> searchHistory) {
+        try {
+            String key = USER_SEARCH_HISTORY_PREFIX + userId;
+            String jsonHistory = objectMapper.writeValueAsString(searchHistory);
+            redisTemplate.opsForValue().set(key, jsonHistory, Duration.ofHours(24)); // 24시간 캐시
+        } catch (Exception e) {
+            // 로깅 없이 조용히 실패 처리
+        }
+    }
+    
+    /**
+     * 사용자 관심 키워드 캐시에서 조회
+     */
+    public List<String> getUserInterestKeywords(String userId) {
+        try {
+            String key = USER_INTEREST_KEYWORDS_PREFIX + userId;
+            String cached = redisTemplate.opsForValue().get(key);
+            if (cached != null) {
+                return objectMapper.readValue(cached, List.class);
+            }
+        } catch (Exception e) {
+            // 로깅 없이 조용히 실패 처리
+        }
+        return null;
+    }
+    
+    /**
+     * 데이터베이스에서 사용자 관심 키워드 조회
+     */
+    public List<String> getUserInterestKeywordsFromDatabase(String userId) {
+        try {
+            return userInterestKeywordsRepository.findKeywordsByUserId(userId);
+        } catch (Exception e) {
+            // 데이터베이스 오류 시 빈 리스트 반환
+            return List.of();
+        }
+    }
+    
+    /**
+     * 사용자 관심 키워드 캐시에 저장
+     */
+    public void cacheUserInterestKeywords(String userId, List<String> keywords) {
+        try {
+            String key = USER_INTEREST_KEYWORDS_PREFIX + userId;
+            String jsonKeywords = objectMapper.writeValueAsString(keywords);
+            redisTemplate.opsForValue().set(key, jsonKeywords, Duration.ofDays(7)); // 7일 캐시
+        } catch (Exception e) {
+            // 로깅 없이 조용히 실패 처리
+        }
+    }
+    
+    /**
+     * 사용자 관심 키워드 데이터베이스에 저장
+     */
+    @Transactional
+    public void saveUserInterestKeywords(String userId, List<String> keywords) {
+        try {
+            // 1. 기존 관심 키워드 비활성화
+            userInterestKeywordsRepository.deactivateAllByUserId(userId);
+            
+            // 2. 새로운 관심 키워드 저장
+            AtomicInteger priority = new AtomicInteger(1);
+            List<UserInterestKeywords> newKeywords = keywords.stream()
+                    .map(keyword -> UserInterestKeywords.builder()
+                            .userId(userId)
+                            .keyword(keyword)
+                            .priority(priority.getAndIncrement())
+                            .isActive(true)
+                            .lastUpdatedAt(LocalDateTime.now())
+                            .build())
+                    .toList();
+            
+            userInterestKeywordsRepository.saveAll(newKeywords);
+            
+            // 3. 캐시에도 저장
+            cacheUserInterestKeywords(userId, keywords);
+            
+        } catch (Exception e) {
+            // 데이터베이스 저장 실패 시 캐시에만 저장
+            cacheUserInterestKeywords(userId, keywords);
+        }
     }
 }
