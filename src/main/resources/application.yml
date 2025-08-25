@@ -94,3 +94,67 @@ springdoc:
     enabled: true
   paths-to-match:
     - /api/**
+
+prefetch:
+  seed-from-datalab: true
+  popular-keywords:
+    - "아이폰"
+    - "갤럭시"
+    - "맥북"
+    - "에어팟"
+    - "노트북"
+    - "청소기"
+    - "모니터"
+    - "그래픽카드"
+    - "TV"
+    - "냉장고"
+  schedule:
+    seed-cron: "0 0 2 * * ?"  # 매일 새벽 2시
+    prefetch-cron: "0 */30 * * * ?"  # 30분마다
+  cache:
+    ttl: 1800  # 30분
+    product-size: 20
+
+monitoring:
+  health-check-enabled: true
+  metrics-enabled: true
+  logging:
+    aggregation-level: INFO
+    cache-level: DEBUG
+    api-level: INFO
+    performance-level: INFO
+  cache:
+    hit-rate-threshold: 0.8
+    stats-interval: 300s  # 5분
+    max-key-count: 10000
+  alert:
+    aggregation-failure-threshold: 3
+    cache-hit-rate-alert-threshold: 0.6
+    response-time-threshold: 5000
+
+batch:
+  prefetch:
+    enabled: true
+    cron: "0 0/30 * * * *"  # 30분마다
+    keyword-count: 10
+    timeout: 300s  # 5분
+    max-retries: 3
+    retry-interval: 60s  # 1분
+  aggregation:
+    enabled: true
+    daily-cron: "0 0 3 * * ?"  # 매일 새벽 3시
+    weekly-cron: "0 0 4 ? * MON"  # 매주 월요일 새벽 4시
+    monthly-cron: "0 0 5 1 * ?"  # 매월 1일 새벽 5시
+    timeout: 600s  # 10분
+    max-retries: 3
+    retry-interval: 120s  # 2분
+    batch-size: 100
+    parallel-threads: 2
+  common:
+    initialize-schema: true
+    log-level: INFO
+    job-history-retention-days: 30
+    job-history-retention-count: 100
+    prevent-duplicate-execution: true
+    failure-notification-enabled: true
+    success-notification-enabled: false
