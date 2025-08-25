@@ -178,6 +178,27 @@ public class MonitoringService {
     }
 
     /**
+     * 배치 잡 성공 수 조회
+     */
+    public long getBatchJobSuccessCount() {
+        return batchJobSuccessCount.get();
+    }
+
+    /**
+     * 배치 잡 실패 수 조회
+     */
+    public long getBatchJobFailureCount() {
+        return batchJobFailureCount.get();
+    }
+
+    /**
+     * 최대 응답 시간 조회
+     */
+    public long getMaxResponseTime() {
+        return maxResponseTime.get();
+    }
+
+    /**
      * 요청 수 조회
      */
     public long getRequestCount() {
@@ -202,7 +223,7 @@ public class MonitoringService {
      * 집계 성공 수 조회
      */
     public long getAggregationSuccessCount() {
-        return 0; // aggregationSuccesses.get(); // This variable was removed
+        return aggregationSuccesses.get();
     }
 
     /**
