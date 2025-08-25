@@ -102,7 +102,8 @@ public class TrendCacheService {
             String key = USER_SEARCH_HISTORY_PREFIX + userId;
             String cached = redisTemplate.opsForValue().get(key);
             if (cached != null) {
-                return objectMapper.readValue(cached, List.class);
+                return objectMapper.readValue(cached, 
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, String.class));
             }
         } catch (Exception e) {
             // 로깅 없이 조용히 실패 처리
@@ -143,23 +144,81 @@ public class TrendCacheService {
             String key = USER_INTEREST_KEYWORDS_PREFIX + userId;
             String cached = redisTemplate.opsForValue().get(key);
             if (cached != null) {
-                return objectMapper.readValue(cached, List.class);
+                return objectMapper.readValue(cached, 
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, String.class));
+            }
+        } catch (Exception e) {
+            // 로깅 없이 조용히 실패 처리
+        }
+        return List.of();
+    }
+
+    /**
+     * 프리페치 시드 키워드 캐싱
+     */
+    public void cacheTrendKeywords(String cacheKey, List<String> keywords, Duration ttl) {
+        try {
+            String jsonKeywords = objectMapper.writeValueAsString(keywords);
+            redisTemplate.opsForValue().set(cacheKey, jsonKeywords, ttl);
+        } catch (JsonProcessingException e) {
+            // 로깅 없이 조용히 실패 처리
+        }
+    }
+
+    /**
+     * 캐시된 프리페치 시드 키워드 조회
+     */
+    public List<String> getCachedTrendKeywords(String cacheKey) {
+        try {
+            String cached = redisTemplate.opsForValue().get(cacheKey);
+            if (cached != null) {
+                return objectMapper.readValue(cached, 
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, String.class));
+            }
+        } catch (Exception e) {
+            // 로깅 없이 조용히 실패 처리
+        }
+        return List.of();
+    }
+
+    /**
+     * 프리페치 트렌드 데이터 캐싱
+     */
+    public void cacheTrendData(String cacheKey, Object trendData, Duration ttl) {
+        try {
+            String jsonData = objectMapper.writeValueAsString(trendData);
+            redisTemplate.opsForValue().set(cacheKey, jsonData, ttl);
+        } catch (JsonProcessingException e) {
+            // 로깅 없이 조용히 실패 처리
+        }
+    }
+
+    /**
+     * 캐시된 프리페치 트렌드 데이터 조회
+     */
+    public <T> T getCachedTrendData(String cacheKey, Class<T> clazz) {
+        try {
+            String cached = redisTemplate.opsForValue().get(cacheKey);
+            if (cached != null) {
+                return objectMapper.readValue(cached, clazz);
             }
         } catch (Exception e) {
             // 로깅 없이 조용히 실패 처리
         }
         return null;
     }
-    
+
     /**
-     * 데이터베이스에서 사용자 관심 키워드 조회
+     * 패턴으로 캐시 무효화
      */
-    public List<String> getUserInterestKeywordsFromDatabase(String userId) {
+    public void invalidateCacheByPattern(String pattern) {
         try {
-            return userInterestKeywordsRepository.findKeywordsByUserId(userId);
+            var keys = redisTemplate.keys(pattern);
+            if (keys != null && !keys.isEmpty()) {
+                redisTemplate.delete(keys);
+            }
         } catch (Exception e) {
-            // 데이터베이스 오류 시 빈 리스트 반환
-            return List.of();
+            // 로깅 없이 조용히 실패 처리
         }
     }
     
