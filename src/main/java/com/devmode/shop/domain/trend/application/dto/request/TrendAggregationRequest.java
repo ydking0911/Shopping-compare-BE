@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 public record TrendAggregationRequest(
         @Size(max = 10, message = "키워드는 최대 10개까지 가능합니다")
@@ -45,7 +46,7 @@ public record TrendAggregationRequest(
         }
         
         // 집계 타입 유효성 검사
-        if (aggregationType != null && !aggregationType.matches("^(daily|weekly|monthly)$")) {
+        if (aggregationType != null && !Set.of("daily", "weekly", "monthly").contains(aggregationType.toLowerCase())) {
             throw new IllegalArgumentException("지원하지 않는 집계 타입: " + aggregationType);
         }
     }

@@ -4,6 +4,7 @@ import com.devmode.shop.domain.trend.application.dto.request.TrendSearchRequest;
 import com.devmode.shop.domain.trend.application.dto.response.trend.TrendSearchResponse;
 import com.devmode.shop.global.config.properties.DataLabApiProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.devmode.shop.domain.product.domain.repository.SearchHistoryRepository;
 import com.devmode.shop.domain.trend.domain.entity.UserInterestKeywords;
@@ -32,6 +33,9 @@ public class TrendCacheService {
 
     private static final String CACHE_PREFIX = "trend:";
     private static final String SEARCH_PREFIX = "trend_search:";
+    
+    // TypeFactory를 static final로 캐싱하여 반복적인 객체 생성 방지
+    private static final CollectionType STRING_LIST_TYPE = new ObjectMapper().getTypeFactory().constructCollectionType(List.class, String.class);
 
     public void cacheTrendData(String keyword, LocalDate date, String data) {
         String key = CACHE_PREFIX + keyword + ":" + date;
@@ -144,8 +148,7 @@ public class TrendCacheService {
             String key = USER_INTEREST_KEYWORDS_PREFIX + userId;
             String cached = redisTemplate.opsForValue().get(key);
             if (cached != null) {
-                return objectMapper.readValue(cached, 
-                    objectMapper.getTypeFactory().constructCollectionType(List.class, String.class));
+                return objectMapper.readValue(cached, STRING_LIST_TYPE);
             }
         } catch (Exception e) {
             // 로깅 없이 조용히 실패 처리
@@ -172,8 +175,7 @@ public class TrendCacheService {
         try {
             String cached = redisTemplate.opsForValue().get(cacheKey);
             if (cached != null) {
-                return objectMapper.readValue(cached, 
-                    objectMapper.getTypeFactory().constructCollectionType(List.class, String.class));
+                return objectMapper.readValue(cached, STRING_LIST_TYPE);
             }
         } catch (Exception e) {
             // 로깅 없이 조용히 실패 처리
@@ -264,6 +266,22 @@ public class TrendCacheService {
         } catch (Exception e) {
             // 데이터베이스 저장 실패 시 캐시에만 저장
             cacheUserInterestKeywords(userId, keywords);
+        }
+    }
+    
+    /**
+     * 사용자 관심 키워드 데이터베이스에서 조회
+     */
+    @Transactional(readOnly = true)
+    public List<String> getUserInterestKeywordsFromDatabase(String userId) {
+        try {
+            List<UserInterestKeywords> keywords = userInterestKeywordsRepository.findByUserIdAndIsActiveTrueOrderByPriorityAsc(userId);
+            return keywords.stream()
+                    .map(UserInterestKeywords::getKeyword)
+                    .toList();
+        } catch (Exception e) {
+            // 로깅 없이 조용히 실패 처리
+            return List.of();
         }
     }
 }

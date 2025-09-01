@@ -175,7 +175,13 @@ public class BatchJobSchedulerService {
             scheduledExecutorService.schedule(() -> {
                 try {
                     log.info("[Batch] 프리페치 잡 재시도 실행: {}/{}", retryCount, maxRetries);
-                    schedulePrefetchTrendsJob();
+                    batchJobUseCase.executePrefetchJob(new BatchJobRequest(
+                        "prefetch-retry",
+                        "프리페치 트렌드 잡 재시도",
+                        LocalDateTime.now(),
+                        Map.of("source", "retry", "retryCount", String.valueOf(retryCount)),
+                        "retry"
+                    ));
                 } catch (Exception ex) {
                     log.error("[Batch] 프리페치 잡 재시도 중 예외 발생", ex);
                 }
@@ -217,7 +223,13 @@ public class BatchJobSchedulerService {
             scheduledExecutorService.schedule(() -> {
                 try {
                     log.info("[Batch] 집계 잡 재시도 실행: {}/{}", retryCount, maxRetries);
-                    scheduleDailyAggregationJob();
+                    batchJobUseCase.executeDailyAggregationJob(new BatchJobRequest(
+                        "daily-aggregation-retry",
+                        "일별 집계 잡 재시도",
+                        LocalDateTime.now(),
+                        Map.of("source", "retry", "retryCount", String.valueOf(retryCount)),
+                        "retry"
+                    ));
                 } catch (Exception ex) {
                     log.error("[Batch] 집계 잡 재시도 중 예외 발생", ex);
                 }

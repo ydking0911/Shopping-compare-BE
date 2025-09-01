@@ -227,9 +227,7 @@ class TrendCacheServiceTest {
         List<String> expectedKeywords = List.of("노트북", "키보드");
         
         when(valueOperations.get("user_interest_keywords:user123")).thenReturn(cachedJson);
-        when(objectMapper.getTypeFactory()).thenReturn(typeFactory);
-        when(typeFactory.constructCollectionType(List.class, String.class)).thenReturn(collectionType);
-        when(objectMapper.readValue(cachedJson, collectionType)).thenReturn(expectedKeywords);
+        when(objectMapper.readValue(eq(cachedJson), any(CollectionType.class))).thenReturn(expectedKeywords);
 
         // when
         List<String> result = trendCacheService.getUserInterestKeywords(TEST_USER_ID);
@@ -275,9 +273,7 @@ class TrendCacheServiceTest {
         List<String> expectedKeywords = List.of("노트북", "키보드");
         
         when(valueOperations.get("test_key")).thenReturn(cachedJson);
-        when(objectMapper.getTypeFactory()).thenReturn(typeFactory);
-        when(typeFactory.constructCollectionType(List.class, String.class)).thenReturn(collectionType);
-        when(objectMapper.readValue(cachedJson, collectionType)).thenReturn(expectedKeywords);
+        when(objectMapper.readValue(eq(cachedJson), any(CollectionType.class))).thenReturn(expectedKeywords);
 
         // when
         List<String> result = trendCacheService.getCachedTrendKeywords("test_key");

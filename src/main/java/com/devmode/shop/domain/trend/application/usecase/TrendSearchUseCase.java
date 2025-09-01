@@ -155,7 +155,7 @@ public class TrendSearchUseCase {
             }
             
             // 2. 데이터베이스에서 사용자 관심 키워드 조회
-            List<String> interestKeywords = trendCacheService.getUserInterestKeywords(userId);
+            List<String> interestKeywords = trendCacheService.getUserInterestKeywordsFromDatabase(userId);
             
             // 3. 캐시에 저장
             if (interestKeywords != null && !interestKeywords.isEmpty()) {
