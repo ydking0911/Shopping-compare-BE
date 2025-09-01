@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
@@ -21,6 +23,7 @@ public class BatchJobSchedulerService {
     private final BatchJobUseCase batchJobUseCase;
     private final BatchProperties batchProperties;
     private final BatchNotificationService notificationService;
+    private final ScheduledExecutorService scheduledExecutorService;
 
     // 재시도 카운터
     private final AtomicInteger prefetchRetryCount = new AtomicInteger(0);
@@ -162,18 +165,22 @@ public class BatchJobSchedulerService {
         if (retryCount <= maxRetries) {
             log.warn("[Batch] 프리페치 잡 재시도 {}/{}: {}", retryCount, maxRetries, e.getMessage());
             
-            // 백오프 지연 후 재시도
-            try {
-                long delayMs = batchProperties.getPrefetch().getRetryInterval().toMillis() * retryCount;
-                Thread.sleep(delayMs);
-                
-                // 재시도 로직 (간단한 재시도)
-                schedulePrefetchTrendsJob();
-                
-            } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-                log.error("[Batch] 프리페치 잡 재시도 중 인터럽트 발생", ie);
-            }
+            // 백오프 지연 계산 (지수 백오프 적용)
+            long delayMs = Math.min(
+                batchProperties.getPrefetch().getRetryInterval().toMillis() * (1L << (retryCount - 1)),
+                batchProperties.getPrefetch().getRetryInterval().toMillis() * 10 // 최대 10배까지만
+            );
+            
+            // Non-blocking 재시도 using ScheduledExecutorService
+            scheduledExecutorService.schedule(() -> {
+                try {
+                    log.info("[Batch] 프리페치 잡 재시도 실행: {}/{}", retryCount, maxRetries);
+                    schedulePrefetchTrendsJob();
+                } catch (Exception ex) {
+                    log.error("[Batch] 프리페치 잡 재시도 중 예외 발생", ex);
+                }
+            }, delayMs, TimeUnit.MILLISECONDS);
+            
         } else {
             log.error("[Batch] 프리페치 잡 최대 재시도 횟수 초과: {}", maxRetries);
             
@@ -200,18 +207,22 @@ public class BatchJobSchedulerService {
         if (retryCount <= maxRetries) {
             log.warn("[Batch] 집계 잡 재시도 {}/{}: {}", retryCount, maxRetries, e.getMessage());
             
-            // 백오프 지연 후 재시도
-            try {
-                long delayMs = batchProperties.getAggregation().getRetryInterval().toMillis() * retryCount;
-                Thread.sleep(delayMs);
-                
-                // 재시도 로직 (간단한 재시도)
-                scheduleDailyAggregationJob();
-                
-            } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-                log.error("[Batch] 집계 잡 재시도 중 인터럽트 발생", ie);
-            }
+            // 백오프 지연 계산 (지수 백오프 적용)
+            long delayMs = Math.min(
+                batchProperties.getAggregation().getRetryInterval().toMillis() * (1L << (retryCount - 1)),
+                batchProperties.getAggregation().getRetryInterval().toMillis() * 10 // 최대 10배까지만
+            );
+            
+            // Non-blocking 재시도 using ScheduledExecutorService
+            scheduledExecutorService.schedule(() -> {
+                try {
+                    log.info("[Batch] 집계 잡 재시도 실행: {}/{}", retryCount, maxRetries);
+                    scheduleDailyAggregationJob();
+                } catch (Exception ex) {
+                    log.error("[Batch] 집계 잡 재시도 중 예외 발생", ex);
+                }
+            }, delayMs, TimeUnit.MILLISECONDS);
+            
         } else {
             log.error("[Batch] 집계 잡 최대 재시도 횟수 초과: {}", maxRetries);
             

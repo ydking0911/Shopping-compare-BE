@@ -20,6 +20,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Configuration
@@ -209,5 +212,20 @@ public class BatchConfig {
                     return RepeatStatus.FINISHED;
                 }, transactionManager)
                 .build();
+    }
+
+    /**
+     * 배치 재시도를 위한 ScheduledExecutorService
+     */
+    @Bean
+    public ScheduledExecutorService batchRetryExecutor() {
+        return Executors.newScheduledThreadPool(
+            5, // 코어 스레드 수
+            r -> {
+                Thread t = new Thread(r, "batch-retry-" + System.currentTimeMillis());
+                t.setDaemon(true); // 데몬 스레드로 설정하여 애플리케이션 종료 시 자동 정리
+                return t;
+            }
+        );
     }
 }
