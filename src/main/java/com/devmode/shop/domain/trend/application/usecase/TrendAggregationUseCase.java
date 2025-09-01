@@ -142,11 +142,18 @@ public class TrendAggregationUseCase {
             int totalElements = 0;
             int offset = request.page() * request.size();
 
+            // 정렬 기준 안전성 검사 추가
+            if (request.sortBy() == null || request.sortBy().isEmpty()) {
+                throw new IllegalArgumentException("정렬 기준이 비어있습니다.");
+            }
+            
+            String sortBy = request.sortBy().get(0);
+            
             switch (request.aggregationType().toLowerCase()) {
                 case "daily":
                     aggregations = aggregationRepository.findDailyAggregations(
                             request.keywords(), request.startDate(), request.endDate(),
-                            request.sortBy().get(0), request.sortOrder(), offset, request.size()
+                            sortBy, request.sortOrder(), offset, request.size()
                     );
                     totalElements = aggregationRepository.countDailyAggregations(
                             request.keywords(), request.startDate(), request.endDate()
@@ -155,7 +162,7 @@ public class TrendAggregationUseCase {
                 case "weekly":
                     aggregations = aggregationRepository.findWeeklyAggregations(
                             request.keywords(), null, null,
-                            request.sortBy().get(0), request.sortOrder(), offset, request.size()
+                            sortBy, request.sortOrder(), offset, request.size()
                     );
                     totalElements = aggregationRepository.countWeeklyAggregations(
                             request.keywords(), null, null
@@ -164,7 +171,7 @@ public class TrendAggregationUseCase {
                 case "monthly":
                     aggregations = aggregationRepository.findMonthlyAggregations(
                             request.keywords(), null, null,
-                            request.sortBy().get(0), request.sortOrder(), offset, request.size()
+                            sortBy, request.sortOrder(), offset, request.size()
                     );
                     totalElements = aggregationRepository.countMonthlyAggregations(
                             request.keywords(), null, null

@@ -16,8 +16,12 @@ import org.mockito.quality.Strictness;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -126,15 +130,24 @@ class MonitoringServiceTest {
     }
 
     @Test
-    @DisplayName("응답 시간 메트릭 기록 테스트")
-    void testRecordResponseTime() {
+    @DisplayName("응답 시간 메트릭 - AtomicLong.updateAndGet() 동작 확인")
+    void testRecordResponseTime_AtomicLongUpdateAndGet() {
+        // given
+        long responseTime1 = 100L;
+        long responseTime2 = 200L;
+        long responseTime3 = 150L; // 중간 값
+        
         // when
-        monitoringService.recordResponseTime(100L);
-        monitoringService.recordResponseTime(200L);
-        monitoringService.recordResponseTime(50L);
-
-        // then
+        monitoringService.recordResponseTime(responseTime1);
+        monitoringService.recordResponseTime(responseTime2);
+        monitoringService.recordResponseTime(responseTime3);
+        
+        // then - 최대값은 200이어야 함
         assertEquals(200L, monitoringService.getMaxResponseTime());
+        
+        // 응답 시간 기록은 totalRequests를 증가시키지 않으므로
+        // 평균 응답 시간은 0.0이어야 함
+        assertEquals(0.0, monitoringService.getAverageResponseTime(), 0.01);
     }
 
     @Test

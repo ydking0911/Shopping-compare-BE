@@ -88,11 +88,10 @@ public class MonitoringService {
     public void recordResponseTime(long responseTimeMs) {
         totalResponseTime.addAndGet(responseTimeMs);
         
-        long currentMax = maxResponseTime.get();
-        while (responseTimeMs > currentMax && 
-               !maxResponseTime.compareAndSet(currentMax, responseTimeMs)) {
-            currentMax = maxResponseTime.get();
-        }
+        // AtomicLong.updateAndGet()을 사용하여 busy-wait loop 방지
+        maxResponseTime.updateAndGet(currentMax -> 
+            Math.max(currentMax, responseTimeMs)
+        );
     }
 
     /**

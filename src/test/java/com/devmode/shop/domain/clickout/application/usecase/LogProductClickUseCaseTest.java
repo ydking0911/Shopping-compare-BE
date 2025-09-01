@@ -1,21 +1,24 @@
 package com.devmode.shop.domain.clickout.application.usecase;
 
-import com.devmode.shop.domain.clickout.application.dto.request.ProductClickRequest;
-import com.devmode.shop.domain.clickout.domain.service.ClickoutLoggingService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
+import java.math.BigDecimal;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
+import com.devmode.shop.domain.clickout.application.dto.request.ProductClickRequest;
+import com.devmode.shop.domain.clickout.domain.service.ClickoutLoggingService;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("LogProductClickUseCase 테스트")
