@@ -93,7 +93,13 @@ class ProductSearchUseCaseTest {
                         "fresh",
                         100L,
                         5,
-                        "NORMAL"
+                        "NORMAL",
+                        false, // aiApplied
+                        "", // aiOriginalKeyword
+                        "", // aiEnhancedKeyword
+                        List.of(), // aiRelatedKeywords
+                        "", // aiSearchTip
+                        "" // aiCategorySuggestion
                 )
         );
 

@@ -72,6 +72,8 @@ exclude-blacklist-path-patterns:
       method: GET
     - path-pattern: /webjars
       method: GET
+    - path-pattern: /api/batch/transcript/execute
+      method: POST
     - path-pattern: /actuator/**
       method: GET
     - path-pattern: /**
@@ -131,6 +133,11 @@ monitoring:
     aggregation-failure-threshold: 3
     cache-hit-rate-alert-threshold: 0.6
     response-time-threshold: 5000
+
+rate-limit:
+  user:
+    anonymous-daily-limit: 100
+    authenticated-daily-limit: 200
 
 batch:
   prefetch:

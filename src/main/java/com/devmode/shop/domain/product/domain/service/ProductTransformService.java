@@ -26,8 +26,8 @@ public class ProductTransformService {
             String sort,
             List<String> appliedFilters,
             String cacheStatus,
-            long responseTime,
-            int apiCallCount,
+            Long responseTime,
+            Integer apiCallCount,
             String quotaStatus) {
         
         // NaverProductItem을 정규화된 ProductItem으로 변환
@@ -39,6 +39,15 @@ public class ProductTransformService {
                 .collect(Collectors.toList());
         
         int totalResults = naverResponse.total() != null ? naverResponse.total() : 0;
+        
+        // 너무 많은 검색 결과는 제한 (API 할당량 보호 및 사용자 경험 개선)
+        int maxReasonableResults = 10000; // 최대 1만개로 제한
+        if (totalResults > maxReasonableResults) {
+            log.warn("[ProductTransform] 검색 결과가 너무 많음: keyword={}, totalResults={}, 제한됨={}", 
+                keyword, totalResults, maxReasonableResults);
+            totalResults = maxReasonableResults;
+        }
+        
         int totalPages = (int) Math.ceil((double) totalResults / size);
         
         ProductSearchResponse.SearchMetadata metadata = new ProductSearchResponse.SearchMetadata(
@@ -46,7 +55,13 @@ public class ProductTransformService {
             cacheStatus,
             responseTime,
             apiCallCount,
-            quotaStatus
+            quotaStatus,
+            false, // aiApplied - 기본 검색이므로 false
+            "", // aiOriginalKeyword - 기본 검색이므로 빈 문자열
+            "", // aiEnhancedKeyword - 기본 검색이므로 빈 문자열
+            List.of(), // aiRelatedKeywords - 기본 검색이므로 빈 리스트
+            "", // aiSearchTip - 기본 검색이므로 빈 문자열
+            "" // aiCategorySuggestion - 기본 검색이므로 빈 문자열
         );
 
         return new ProductSearchResponse(
