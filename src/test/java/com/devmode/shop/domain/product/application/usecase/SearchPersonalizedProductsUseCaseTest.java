@@ -93,7 +93,8 @@ class SearchPersonalizedProductsUseCaseTest {
         );
         
         SearchMetadata metadata = new SearchMetadata(
-                "2024-08-24", "fresh", 100L, 1, "available"
+                "2024-08-24", "fresh", 100L, 1, "available",
+                false, "", "", List.of(), "", ""
         );
         
         ProductSearchResponse expectedResponse = new ProductSearchResponse(
@@ -127,7 +128,8 @@ class SearchPersonalizedProductsUseCaseTest {
         );
         
         SearchMetadata metadata = new SearchMetadata(
-                "2024-08-24", "fresh", 100L, 1, "available"
+                "2024-08-24", "fresh", 100L, 1, "available",
+                false, "", "", List.of(), "", ""
         );
         
         ProductSearchResponse expectedResponse = new ProductSearchResponse(
@@ -160,7 +162,8 @@ class SearchPersonalizedProductsUseCaseTest {
                 .thenThrow(new RuntimeException("테스트 예외"));
         
         SearchMetadata metadata = new SearchMetadata(
-                "2024-08-24", "fresh", 100L, 1, "available"
+                "2024-08-24", "fresh", 100L, 1, "available",
+                false, "", "", List.of(), "", ""
         );
         
         ProductSearchResponse expectedResponse = new ProductSearchResponse(

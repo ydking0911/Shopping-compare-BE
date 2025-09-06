@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
+ 
 import lombok.extern.slf4j.Slf4j;
+ 
 
 @RestController
 @RequiredArgsConstructor
@@ -38,6 +40,7 @@ public class ProductController implements ProductApi {
         ProductSearchResponse response = productSearchUseCase.searchProducts(request);
         return BaseResponse.onSuccess(response);
     }
+
     
     @GetMapping("/search")
     @Override
@@ -120,4 +123,9 @@ public class ProductController implements ProductApi {
         
         return BaseResponse.onSuccess(response);
     }
+
+    
+
+    
+
 }

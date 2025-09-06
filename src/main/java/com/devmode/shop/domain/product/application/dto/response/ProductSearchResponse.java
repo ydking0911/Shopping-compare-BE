@@ -41,7 +41,13 @@ public record ProductSearchResponse(
         String cacheStatus, // "fresh", "cached", "fallback"
         Long responseTime,
         Integer apiCallCount,
-        String quotaStatus // "available", "warning", "exceeded"
+        String quotaStatus, // "available", "warning", "exceeded"
+        Boolean aiApplied, // AI가 적용되었는지 여부
+        String aiOriginalKeyword, // AI 적용 전 원본 검색어
+        String aiEnhancedKeyword, // AI가 개선한 검색어
+        List<String> aiRelatedKeywords, // AI가 제안한 관련 키워드들
+        String aiSearchTip, // AI가 제안한 검색 팁
+        String aiCategorySuggestion // AI가 제안한 카테고리
     ) {
         public SearchMetadata {
             // 기본값 설정
@@ -49,6 +55,12 @@ public record ProductSearchResponse(
             responseTime = (responseTime != null) ? responseTime : 0L;
             apiCallCount = (apiCallCount != null) ? apiCallCount : 0;
             quotaStatus = (quotaStatus != null) ? quotaStatus : "available";
+            aiApplied = (aiApplied != null) ? aiApplied : false;
+            aiOriginalKeyword = (aiOriginalKeyword != null) ? aiOriginalKeyword : "";
+            aiEnhancedKeyword = (aiEnhancedKeyword != null) ? aiEnhancedKeyword : "";
+            aiRelatedKeywords = (aiRelatedKeywords != null) ? aiRelatedKeywords : List.of();
+            aiSearchTip = (aiSearchTip != null) ? aiSearchTip : "";
+            aiCategorySuggestion = (aiCategorySuggestion != null) ? aiCategorySuggestion : "";
         }
     }
     
